@@ -73,3 +73,4 @@ class TokenBlacklistCreate(TokenBlacklistBase):
 
 class TokenBlacklistUpdate(TokenBlacklistBase):
     pass
+

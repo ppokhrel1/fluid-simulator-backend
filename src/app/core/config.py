@@ -57,7 +57,7 @@ class PostgresSettings(DatabaseSettings):
     POSTGRES_SYNC_PREFIX: str = config("POSTGRES_SYNC_PREFIX", default="postgresql://")
     POSTGRES_ASYNC_PREFIX: str = config("POSTGRES_ASYNC_PREFIX", default="postgresql+asyncpg://")
     POSTGRES_URI: str = f"{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_SERVER}:{POSTGRES_PORT}/{POSTGRES_DB}"
-    POSTGRES_URL: str | None = config("POSTGRES_URL", default=None)
+    POSTGRES_URL: str | None = config("DATABASE_URL", default=None)
 
 
 class FirstUserSettings(BaseSettings):
@@ -136,8 +136,8 @@ class Settings(
     TestSettings,
     RedisCacheSettings,
     ClientSideCacheSettings,
-    RedisQueueSettings,
-    RedisRateLimiterSettings,
+    #RedisQueueSettings,
+    #RedisRateLimiterSettings,
     DefaultRateLimitSettings,
     CRUDAdminSettings,
     EnvironmentSettings,
