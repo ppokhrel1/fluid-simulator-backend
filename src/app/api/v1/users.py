@@ -12,9 +12,40 @@ from ...crud.crud_rate_limit import crud_rate_limits
 from ...crud.crud_tier import crud_tiers
 from ...crud.crud_users import crud_users
 from ...schemas.tier import TierRead
-from ...schemas.user import UserCreate, UserCreateInternal, UserRead, UserTierUpdate, UserUpdate
+from ...schemas.user import UserCreate, UserCreateInternal, UserRead, UserTierUpdate, UserUpdate, RegistrationRequest
 
 router = APIRouter(tags=["users"])
+
+
+@router.post("/register", response_model=UserRead, status_code=201)
+async def register_user(
+    request: Request, user: RegistrationRequest, db: Annotated[AsyncSession, Depends(async_get_db)]
+) -> UserRead:
+    """Register a new user with the format expected by the frontend."""
+    email_row = await crud_users.exists(db=db, email=user.email)
+    if email_row:
+        raise DuplicateValueException("Email is already registered")
+
+    username_row = await crud_users.exists(db=db, username=user.username)
+    if username_row:
+        raise DuplicateValueException("Username not available")
+
+    # Convert RegistrationRequest to UserCreateInternal
+    user_internal_dict = {
+        "username": user.username,
+        "email": user.email,
+        "hashed_password": get_password_hash(password=user.password),
+        "name": user.full_name,  # Map full_name to name for database storage
+    }
+
+    user_internal = UserCreateInternal(**user_internal_dict)
+    created_user = await crud_users.create(db=db, object=user_internal)
+
+    user_read = await crud_users.get(db=db, id=created_user.id, schema_to_select=UserRead)
+    if user_read is None:
+        raise NotFoundException("Created user not found")
+
+    return cast(UserRead, user_read)
 
 
 @router.post("/user", response_model=UserRead, status_code=201)
