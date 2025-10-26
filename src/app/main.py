@@ -7,6 +7,7 @@ from .admin.initialize import create_admin_interface
 from .api import router
 from .core.config import settings
 from .core.setup import create_application, lifespan_factory
+from fastapi.middleware.cors import CORSMiddleware
 
 admin = create_admin_interface()
 
@@ -32,3 +33,11 @@ app = create_application(router=router, settings=settings, lifespan=lifespan_wit
 # Mount admin interface if enabled
 if admin:
     app.mount(settings.CRUD_ADMIN_MOUNT_PATH, admin.app)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Specify allowed origins
+    allow_credentials=True,
+    allow_methods=["GET", "POST"],           # Specify allowed methods
+    allow_headers=["*"],
+)
