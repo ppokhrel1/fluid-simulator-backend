@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List, Optional, Dict, Any
 from pydantic import BaseModel, Field
-
+import uuid
 # ============================
 # UploadedModel Schemas
 # ============================
@@ -43,12 +43,12 @@ class UploadedModelDelete(BaseModel):
 
 
 class UploadedModelRead(UploadedModelBase):
-    id: int
+    id: uuid.UUID
     created_by_user_id: int
     created_at: datetime
     updated_at: datetime
-    is_deleted: bool
-    deleted_at: Optional[datetime]
+    # is_deleted: bool
+    # deleted_at: Optional[datetime]
 
 
 # ============================

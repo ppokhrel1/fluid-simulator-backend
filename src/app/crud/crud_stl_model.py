@@ -5,7 +5,8 @@ from ..schemas.stl_file_models import (
     ComponentCreate, ComponentUpdate, ComponentDelete, ComponentRead,
     AnalysisResultCreate, AnalysisResultUpdate, AnalysisResultDelete, AnalysisResultRead
 )
-
+from .storage_handler import StorageCRUD
+import os
 # -------------------- CRUD for Models --------------------
 CRUDModel = FastCRUD[
     UploadedModel,          # SQLAlchemy model
@@ -38,7 +39,19 @@ CRUDAnalysis = FastCRUD[
     AnalysisResultRead
 ]
 analysis_crud = CRUDAnalysis(AnalysisResult)
+from ..core.config import settings
 
 # -------------------- Storage CRUD (placeholder) --------------------
 # You can implement your own storage interface (S3, local, etc.)
-storage_crud = None
+SUPABASE_URL = settings.SUPABASE_URL
+SUPABASE_KEY = settings.SUPABASE_KEY
+BUCKET_NAME = settings.SUPABASE_BUCKET_NAME
+if not SUPABASE_URL.startswith("http"):
+    SUPABASE_URL = "https://" + SUPABASE_URL
+print("Supabase KEY:", SUPABASE_KEY)
+# Initialize the storage CRUD instance
+storage_crud = StorageCRUD(
+    supabase_url=SUPABASE_URL,
+    supabase_key=SUPABASE_KEY,
+    bucket_name=BUCKET_NAME
+)

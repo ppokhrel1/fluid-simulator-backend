@@ -34,7 +34,6 @@ ssl_context.load_verify_locations(cafile=CA_FILE_PATH)
 ssl_context.verify_mode = ssl.CERT_REQUIRED
 ssl_context.check_hostname = False # Still disable hostname check for flexibility
 
-
 # Async engine: Pass the explicit SSL context via connect_args
 # This is the most reliable way to enforce SSL connection with asyncpg (especially for Supabase)
 async_engine = create_async_engine(

@@ -17,6 +17,9 @@ class AppSettings(BaseSettings):
     LICENSE_NAME: str | None = config("LICENSE", default=None)
     CONTACT_NAME: str | None = config("CONTACT_NAME", default=None)
     CONTACT_EMAIL: str | None = config("CONTACT_EMAIL", default=None)
+    SUPABASE_URL: str = config("SUPABASE_URL", default="SUPABASE_URL")
+    SUPABASE_KEY: str = config("SUPABASE_SERVICE_KEY", default="SUPABASE_SERVICE_KEY")
+    SUPABASE_BUCKET_NAME: str = config("SUPABASE_BUCKET_NAME", default="SUPABASE_BUCKET_NAME")
 
 
 class CryptSettings(BaseSettings):

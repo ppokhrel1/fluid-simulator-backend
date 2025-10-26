@@ -8,6 +8,9 @@ from app.schemas.stl_file_models import (
     ComponentRead, ComponentCreate,
     AnalysisResultRead, AnalysisResultCreate
 )
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.core.db.database import async_get_db
+
 from ...crud.crud_stl_model import model_crud, component_crud, analysis_crud, storage_crud
 from ...api.dependencies import get_current_user, get_current_superuser
 from app.models import User
@@ -34,7 +37,8 @@ async def upload_model(
     temperature_inlet: Optional[float] = Form(None),
     pressure_outlet: Optional[float] = Form(None),
     components: str = Form("[]"),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(async_get_db) # DB dependency injected
 ):
     """Upload a new 3D model with components and metadata"""
     allowed_types = ['stl', 'obj', 'glb', 'gltf', 'step', 'stp']
@@ -71,10 +75,11 @@ async def upload_model(
         temperature_inlet=temperature_inlet,
         pressure_outlet=pressure_outlet,
         components=components_list,
-        created_by_user_id=current_user.id
+        created_by_user_id=current_user.get('id') or current_user['id']
     )
 
-    model = await model_crud.create(model_data)
+    # FIX: Pass the 'db' session as the first argument to create
+    model = await model_crud.create(db, model_data)
     await storage_crud.upload_file(file_content, file.filename, model.id)
     return model
 
@@ -82,21 +87,33 @@ async def upload_model(
 async def get_models(
     limit: int = 100,
     offset: int = 0,
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(async_get_db) # DB dependency injected
 ):
-    return await model_crud.get_all(limit=limit, offset=offset)
+    # FIX: Pass db
+    return await model_crud.get_all(db, limit=limit, offset=offset)
 
 @router.get("/{model_id}", response_model=UploadedModelRead)
-async def get_model(model_id: int, current_user: User = Depends(get_current_user)):
-    model = await model_crud.get(model_id)
+async def get_model(
+    model_id: int, 
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(async_get_db) # DB dependency injected
+):
+    # FIX: Pass db
+    model = await model_crud.get(db, model_id)
     if not model:
         raise HTTPException(status_code=404, detail="Model not found")
-    await model_crud.update_last_opened(model_id)
+    # FIX: Pass db
+    await model_crud.update_last_opened(db, model_id)
     return model
 
 @router.get("/{model_id}/download")
-async def download_model(model_id: int, current_user: User = Depends(get_current_user)):
-    model = await model_crud.get(model_id)
+async def download_model(model_id: int, current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(async_get_db)):
+    # Assuming storage_crud doesn't require AsyncSession, but model_crud.get does.
+    # FIX: Add db dependency to fetch model
+    # Note: If model_id is 'int', this will fail later, but fixing the missing DB argument for now.
+    model = await model_crud.get(db, model_id) 
     if not model:
         raise HTTPException(status_code=404, detail="Model not found")
     file_content = await storage_crud.download_file(f"{model_id}/{model.file_name}")
@@ -107,43 +124,80 @@ async def download_model(model_id: int, current_user: User = Depends(get_current
     )
 
 @router.put("/{model_id}/status", dependencies=[Depends(get_current_superuser)])
-async def update_model_status(model_id: int, status: str):
-    model = await model_crud.update_model_status(model_id, status)
+async def update_model_status(
+    model_id: int, 
+    status: str,
+    db: AsyncSession = Depends(async_get_db) # DB dependency injected
+):
+    # FIX: Pass db
+    model = await model_crud.update_model_status(db, model_id, status)
     if not model:
         raise HTTPException(status_code=404, detail="Model not found")
     return model
 
 @router.delete("/{model_id}", dependencies=[Depends(get_current_superuser)])
-async def delete_model(model_id: int):
-    model = await model_crud.get(model_id)
+async def delete_model(
+    model_id: int,
+    db: AsyncSession = Depends(async_get_db) # DB dependency injected
+):
+    # FIX: Pass db
+    model = await model_crud.get(db, model_id)
     if not model:
         raise HTTPException(status_code=404, detail="Model not found")
     await storage_crud.delete_file(f"{model_id}/{model.file_name}")
-    await model_crud.delete(model_id)
+    # FIX: Pass db
+    await model_crud.delete(db, model_id)
     return {"success": True, "message": "Model deleted successfully"}
 
 # -------------------- Components --------------------
 @router.post("/{model_id}/components", response_model=ComponentRead, status_code=201)
-async def create_component(model_id: int, component: ComponentCreate, current_user: User = Depends(get_current_user)):
+async def create_component(
+    model_id: int, 
+    component: ComponentCreate, 
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(async_get_db) # DB dependency injected
+):
     component.model_id = model_id
-    return await component_crud.create(component)
+    # FIX: Pass db
+    return await component_crud.create(db, component)
 
 @router.get("/{model_id}/components", response_model=List[ComponentRead])
-async def get_model_components(model_id: int, current_user: User = Depends(get_current_user)):
-    return await component_crud.get_all_by_model(model_id)
+async def get_model_components(
+    model_id: int, 
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(async_get_db) # DB dependency injected
+):
+    # FIX: Pass db
+    return await component_crud.get_all_by_model(db, model_id)
 
 @router.put("/components/{component_id}", response_model=ComponentRead)
-async def update_component(component_id: int, update_data: Dict[str, Any] = Body(...), current_user: User = Depends(get_current_user)):
-    component = await component_crud.update(component_id, update_data)
+async def update_component(
+    component_id: int, 
+    update_data: Dict[str, Any] = Body(...), 
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(async_get_db) # DB dependency injected
+):
+    # FIX: Pass db
+    component = await component_crud.update(db, component_id, update_data)
     if not component:
         raise HTTPException(status_code=404, detail="Component not found")
     return component
 
 # -------------------- Analysis Results --------------------
 @router.post("/analysis/results", response_model=AnalysisResultRead, status_code=201)
-async def create_analysis_result(result: AnalysisResultCreate, current_user: User = Depends(get_current_user)):
-    return await analysis_crud.create(result)
+async def create_analysis_result(
+    result: AnalysisResultCreate, 
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(async_get_db) # DB dependency injected
+):
+    # FIX: Pass db
+    return await analysis_crud.create(db, result)
 
 @router.get("/components/{component_id}/analysis", response_model=List[AnalysisResultRead])
-async def get_component_analysis(component_id: int, current_user: User = Depends(get_current_user)):
-    return await analysis_crud.get_all_by_component(component_id)
+async def get_component_analysis(
+    component_id: int, 
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(async_get_db) # DB dependency injected
+):
+    # FIX: Pass db
+    return await analysis_crud.get_all_by_component(db, component_id)

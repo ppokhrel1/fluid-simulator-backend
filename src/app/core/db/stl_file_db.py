@@ -7,6 +7,7 @@ from .models import (
 )
 import uuid
 import json
+from sqlalchemy.dialects.postgresql import UUID
 
 class ModelCRUD:
     def __init__(self):
