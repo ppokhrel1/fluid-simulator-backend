@@ -1,48 +1,55 @@
 # --------- Builder Stage ---------
-FROM ghcr.io/astral-sh/uv:python3.11-bookworm-slim AS builder
+FROM python:3.11-slim-bookworm AS builder
 
-# Set environment variables for uv
-ENV UV_COMPILE_BYTECODE=1
-ENV UV_LINK_MODE=copy
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1
 
 WORKDIR /app
 
-# Install dependencies first (for better layer caching)
-# RUN --mount=type=cache,target=/root/.cache/uv \
-#     --mount=type=bind,source=uv.lock,target=uv.lock \
-#     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
-#     uv sync --locked --no-install-project
-RUN uv sync --locked --no-install-project
+# Install build tools for compiled wheels (only in builder)
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends \
+    build-essential \
+    gcc \
+    python3-dev \
+    libssl-dev \
+    libffi-dev \
+    libpq-dev \
+    curl \
+ && rm -rf /var/lib/apt/lists/*
 
+# Copy only requirements first to leverage Docker cache
+COPY requirements.txt /app/requirements.txt
 
-# Copy the project source code
+# Create virtualenv and install requirements without using pip cache
+RUN python -m venv /opt/venv \
+ && /opt/venv/bin/python -m pip install --upgrade pip setuptools wheel \
+ && /opt/venv/bin/pip install --no-cache-dir -r /app/requirements.txt
+
+# Copy project files afterwards (so deps layer remains cached)
 COPY . /app
 
-# Install the project in non-editable mode
-RUN uv sync --locked --no-editable
-
-# RUN --mount=type=cache,target=/root/.cache/uv \
-#     uv sync --locked --no-editable
+# If you need to "install" the package locally (optional)
+# RUN /opt/venv/bin/pip install --no-cache-dir .
 
 # --------- Final Stage ---------
 FROM python:3.11-slim-bookworm
 
-# Create a non-root user for security
+# create non-root user
 RUN groupadd --gid 1000 app \
-    && useradd --uid 1000 --gid app --shell /bin/bash --create-home app
+ && useradd --uid 1000 --gid app --shell /bin/bash --create-home app
 
-# Copy the virtual environment from the builder stage
-COPY --from=builder --chown=app:app /app/.venv /app/.venv
+# copy venv from builder stage
+COPY --from=builder --chown=app:app /opt/venv /opt/venv
 
-# Ensure the virtual environment is in the PATH
-ENV PATH="/app/.venv/bin:$PATH"
+ENV PATH="/opt/venv/bin:$PATH" \
+    PIP_NO_CACHE_DIR=1
 
-# Switch to the non-root user
 USER app
-
-# Set the working directory
 WORKDIR /code
 
-# -------- replace with comment to run with gunicorn --------
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+# default entrypoint — change as needed
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# production:
 # CMD ["gunicorn", "app.main:app", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "-b", "0.0.0.0:8000"]
