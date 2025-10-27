@@ -2,9 +2,16 @@ from datetime import datetime
 from typing import Annotated
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
-
+from fastapi_users_db_sqlalchemy import SQLAlchemyBaseUserTable, SQLAlchemyUserDatabase
+from sqlalchemy import DateTime, ForeignKey, Integer, String
 from ..core.schemas import PersistentDeletion, TimestampSchema, UUIDSchema
 
+from fastapi_users_db_sqlalchemy import SQLAlchemyBaseUserTable, SQLAlchemyUserDatabase
+from sqlalchemy.orm import Mapped, mapped_column, DeclarativeBase
+
+# Base class for SQLAlchemy models
+class Base(DeclarativeBase):
+    pass
 
 class UserBase(BaseModel):
     name: Annotated[str, Field(min_length=2, max_length=30, examples=["User Userson"])]
@@ -12,12 +19,27 @@ class UserBase(BaseModel):
     email: Annotated[EmailStr, Field(examples=["user.userson@example.com"])]
 
 
-class User(TimestampSchema, UserBase, UUIDSchema, PersistentDeletion):
-    profile_image_url: Annotated[str, Field(default="https://www.profileimageurl.com")]
-    hashed_password: str
-    is_superuser: bool = False
-    tier_id: int | None = None
 
+class User(SQLAlchemyBaseUserTable[int], Base):
+    __tablename__ = "user"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    
+    name: Mapped[str] = mapped_column(String(30))
+    username: Mapped[str] = mapped_column(String(20), unique=True, index=True)
+    profile_image_url: Mapped[str] = mapped_column(String, default="https://profileimageurl.com")
+    
+    # timestamp fields
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), 
+        default=lambda: datetime.now(timezone.utc)
+    )
+    updated_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), 
+        onupdate=lambda: datetime.now(timezone.utc),
+        nullable=True
+    )
+    tier_id: Mapped[int | None] = mapped_column(ForeignKey("tier.id"), index=True, default=None)
 
 class UserRead(BaseModel):
     id: int

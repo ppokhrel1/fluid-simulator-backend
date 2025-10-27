@@ -10,3 +10,7 @@ bcrypt==4.1.1
 python-magic==0.4.27
 aiofiles==23.2.1
 supabase
+fastapi-users
+authlib
+fastapi-users-db-sqlalchemy
+httpx-oauth

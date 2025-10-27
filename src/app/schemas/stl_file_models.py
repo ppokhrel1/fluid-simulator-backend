@@ -134,7 +134,11 @@ class ComponentResponse(BaseModel):
     message: str
     data: Optional[ComponentRead]
 
-
+class ModelsListResponse(BaseModel):
+    success: bool
+    data: List[UploadedModelRead]
+    total: int
+    
 class ComponentsListResponse(BaseModel):
     success: bool
     data: List[ComponentRead]

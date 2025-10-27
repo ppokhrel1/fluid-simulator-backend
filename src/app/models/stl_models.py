@@ -12,7 +12,7 @@ class UploadedModel(Base):
 
     # Match SQL: id UUID DEFAULT gen_random_uuid() PRIMARY KEY
     id = Column(UUID(as_uuid=True), primary_key=True, index=True, default=uuid.uuid4)
-    
+    #id = Column(Integer, primary_key=True, index=True)
     # Use Text to map to TEXT
     name = Column(Text, nullable=False)
     file_name = Column(Text, nullable=False)

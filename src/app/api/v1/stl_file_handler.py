@@ -6,7 +6,7 @@ import io, json
 from app.schemas.stl_file_models import (
     UploadedModelRead, UploadedModelCreate,
     ComponentRead, ComponentCreate,
-    AnalysisResultRead, AnalysisResultCreate
+    AnalysisResultRead, AnalysisResultCreate, ModelsListResponse
 )
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.db.database import async_get_db
@@ -83,15 +83,21 @@ async def upload_model(
     await storage_crud.upload_file(file_content, file.filename, model.id)
     return model
 
-@router.get("/", response_model=List[UploadedModelRead])
+@router.get("/", response_model=ModelsListResponse)  # Changed to ModelsListResponse
 async def get_models(
     limit: int = 100,
     offset: int = 0,
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(async_get_db) # DB dependency injected
+    #current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(async_get_db)
 ):
-    # FIX: Pass db
-    return await model_crud.get_all(db, limit=limit, offset=offset)
+    """Get all models with pagination"""
+    models = await model_crud.get_multi(db=db, skip=offset, limit=limit)
+    total = len(models['data'])
+    return ModelsListResponse(
+        success=True,
+        data=models['data'],
+        total=total
+    )
 
 @router.get("/{model_id}", response_model=UploadedModelRead)
 async def get_model(

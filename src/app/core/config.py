@@ -20,7 +20,21 @@ class AppSettings(BaseSettings):
     SUPABASE_URL: str = config("SUPABASE_URL", default="SUPABASE_URL")
     SUPABASE_KEY: str = config("SUPABASE_SERVICE_KEY", default="SUPABASE_SERVICE_KEY")
     SUPABASE_BUCKET_NAME: str = config("SUPABASE_BUCKET_NAME", default="SUPABASE_BUCKET_NAME")
-
+    BACKEND_URL : str = config("BACKEND_URL", default="http://localhost:8000")
+    FRONTEND_URL : str = config("FRONTEND_URL", default="http://localhost:7579")
+    GOOGLE_CLIENT_ID: str = config("GOOGLE_CLIENT_ID", default="")
+    GOOGLE_CLIENT_SECRET: str = config("GOOGLE_CLIENT_SECRET", default="")
+    GITHUB_CLIENT_ID: str = config("GITHUB_CLIENT_ID", default="")
+    GITHUB_CLIENT_SECRET: str = config("GITHUB_CLIENT_SECRET", default="")
+    FACEBOOK_CLIENT_ID: str = config("FACEBOOK_CLIENT_ID", default="")
+    FACEBOOK_CLIENT_SECRET: str = config("FACEBOOK_CLIENT_SECRET", default="")
+    LINKEDIN_CLIENT_ID: str = config("LINKEDIN_CLIENT_ID", default="")
+    LINKEDIN_CLIENT_SECRET: str = config("LINKEDIN_CLIENT_SECRET", default="")
+    
+    # JWT
+    JWT_SECRET: str = "your-jwt-secret-key"
+    class Config:
+        env_file = ".env"
 
 class CryptSettings(BaseSettings):
     SECRET_KEY: SecretStr = config("SECRET_KEY", cast=SecretStr)
