@@ -4,7 +4,7 @@ from typing import Any, List
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ...core.db.database import get_async_db
+from ...core.db.database import async_get_db
 from ...core.security import get_current_user
 from ...crud.crud_chatbot import chat_session_crud, chat_history_crud
 from ...models.user import User
@@ -19,7 +19,7 @@ router = APIRouter()
 
 @router.get("/sessions", response_model=List[ChatSessionRead])
 async def get_chat_sessions(
-    db: AsyncSession = Depends(get_async_db),
+    db: AsyncSession = Depends(async_get_db),
     current_user: User = Depends(get_current_user)
 ):
     """Get all chat sessions for the current user."""
@@ -30,7 +30,7 @@ async def get_chat_sessions(
 @router.post("/sessions", response_model=ChatSessionRead)
 async def create_chat_session(
     session_data: ChatSessionCreate,
-    db: AsyncSession = Depends(get_async_db),
+    db: AsyncSession = Depends(async_get_db),
     current_user: User = Depends(get_current_user)
 ):
     """Create a new chat session."""
@@ -43,7 +43,7 @@ async def create_chat_session(
 @router.get("/sessions/{session_id}", response_model=ChatSessionRead)
 async def get_chat_session(
     session_id: str,
-    db: AsyncSession = Depends(get_async_db),
+    db: AsyncSession = Depends(async_get_db),
     current_user: User = Depends(get_current_user)
 ):
     """Get a specific chat session with its history."""
@@ -67,7 +67,7 @@ async def get_chat_session(
 async def update_chat_session(
     session_id: str,
     session_update: ChatSessionUpdate,
-    db: AsyncSession = Depends(get_async_db),
+    db: AsyncSession = Depends(async_get_db),
     current_user: User = Depends(get_current_user)
 ):
     """Update a chat session."""
@@ -91,7 +91,7 @@ async def update_chat_session(
 @router.delete("/sessions/{session_id}")
 async def delete_chat_session(
     session_id: str,
-    db: AsyncSession = Depends(get_async_db),
+    db: AsyncSession = Depends(async_get_db),
     current_user: User = Depends(get_current_user)
 ):
     """Delete a chat session."""
@@ -117,7 +117,7 @@ async def get_chat_messages(
     session_id: str,
     limit: int = 50,
     offset: int = 0,
-    db: AsyncSession = Depends(get_async_db),
+    db: AsyncSession = Depends(async_get_db),
     current_user: User = Depends(get_current_user)
 ):
     """Get chat messages for a session."""
@@ -143,7 +143,7 @@ async def get_chat_messages(
 async def send_chat_message(
     session_id: str,
     message: ChatMessage,
-    db: AsyncSession = Depends(get_async_db),
+    db: AsyncSession = Depends(async_get_db),
     current_user: User = Depends(get_current_user)
 ):
     """Send a message to the AI chatbot."""

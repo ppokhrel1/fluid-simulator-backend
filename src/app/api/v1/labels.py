@@ -4,10 +4,10 @@ from typing import Any, List
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ...core.db.database import get_async_db
+from ...core.db.database import async_get_db
 from ...core.security import get_current_user
 from ...crud.crud_labels import label_crud
-from ...crud.crud_stl_model import stl_models
+from ...crud.crud_stl_model import model_crud
 from ...models.user import User
 from ...schemas.labels import LabelCreate, LabelUpdate, LabelRead, AILabelSuggestion
 
@@ -17,7 +17,7 @@ router = APIRouter()
 @router.get("/models/{model_id}/labels", response_model=List[LabelRead])
 async def get_model_labels(
     model_id: str,
-    db: AsyncSession = Depends(get_async_db)
+    db: AsyncSession = Depends(async_get_db)
 ):
     """Get all labels for a specific 3D model."""
     # Verify model exists
@@ -36,7 +36,7 @@ async def get_model_labels(
 async def create_model_label(
     model_id: str,
     label_data: LabelCreate,
-    db: AsyncSession = Depends(get_async_db),
+    db: AsyncSession = Depends(async_get_db),
     current_user: User = Depends(get_current_user)
 ):
     """Create a new label for a 3D model."""
@@ -59,7 +59,7 @@ async def create_model_label(
 @router.get("/labels/{label_id}", response_model=LabelRead)
 async def get_label(
     label_id: str,
-    db: AsyncSession = Depends(get_async_db)
+    db: AsyncSession = Depends(async_get_db)
 ):
     """Get a specific label."""
     label = await label_crud.get(db, id=label_id)
@@ -75,7 +75,7 @@ async def get_label(
 async def update_label(
     label_id: str,
     label_update: LabelUpdate,
-    db: AsyncSession = Depends(get_async_db),
+    db: AsyncSession = Depends(async_get_db),
     current_user: User = Depends(get_current_user)
 ):
     """Update a label (only by creator)."""
@@ -99,7 +99,7 @@ async def update_label(
 @router.delete("/labels/{label_id}")
 async def delete_label(
     label_id: str,
-    db: AsyncSession = Depends(get_async_db),
+    db: AsyncSession = Depends(async_get_db),
     current_user: User = Depends(get_current_user)
 ):
     """Delete a label (only by creator)."""
@@ -123,7 +123,7 @@ async def delete_label(
 @router.get("/labels/user/{user_id}", response_model=List[LabelRead])
 async def get_user_labels(
     user_id: int,
-    db: AsyncSession = Depends(get_async_db)
+    db: AsyncSession = Depends(async_get_db)
 ):
     """Get all labels created by a specific user."""
     labels = await label_crud.get_user_labels(db, user_id)
@@ -133,7 +133,7 @@ async def get_user_labels(
 @router.get("/labels/category/{category}", response_model=List[LabelRead])
 async def get_labels_by_category(
     category: str,
-    db: AsyncSession = Depends(get_async_db)
+    db: AsyncSession = Depends(async_get_db)
 ):
     """Get labels by category."""
     labels = await label_crud.get_labels_by_category(db, category)
@@ -143,7 +143,7 @@ async def get_labels_by_category(
 @router.post("/models/{model_id}/ai-suggestions", response_model=List[AILabelSuggestion])
 async def get_ai_label_suggestions(
     model_id: str,
-    db: AsyncSession = Depends(get_async_db),
+    db: AsyncSession = Depends(async_get_db),
     current_user: User = Depends(get_current_user)
 ):
     """Get AI-powered label suggestions for a 3D model."""

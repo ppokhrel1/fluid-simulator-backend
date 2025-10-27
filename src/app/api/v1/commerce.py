@@ -12,7 +12,8 @@ from ...schemas.commerce import (
     DesignAssetCreate, DesignAssetUpdate, DesignAssetRead,
     CartItemCreate, CartItemUpdate, CartItemRead,
     SalesTransactionCreate, SalesTransactionRead,
-    PayoutCreate, PayoutUpdate, PayoutRead
+    PayoutCreate, PayoutUpdate, PayoutRead,
+    SellDesignForm
 )
 
 router = APIRouter()
@@ -24,7 +25,7 @@ async def get_designs(
     category: str = None,
     limit: int = 100,
     offset: int = 0,
-    db: AsyncSession = Depends(get_async_db)
+    db: AsyncSession = Depends(async_get_db)
 ):
     """Get all design assets or filter by category."""
     if category:
@@ -37,7 +38,7 @@ async def get_designs(
 @router.post("/designs", response_model=DesignAssetRead)
 async def create_design(
     design_data: DesignAssetCreate,
-    db: AsyncSession = Depends(get_async_db),
+    db: AsyncSession = Depends(async_get_db),
     current_user: User = Depends(get_current_user)
 ):
     """Create a new design asset for sale."""
@@ -47,10 +48,34 @@ async def create_design(
     return design
 
 
+@router.post("/designs/sell", response_model=DesignAssetRead)
+async def sell_design(
+    form_data: SellDesignForm,
+    db: AsyncSession = Depends(async_get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Create a new design asset from frontend sell form."""
+    from decimal import Decimal
+    
+    # Convert frontend form data to backend schema
+    design_data = DesignAssetCreate(
+        name=form_data.designName,  # Convert designName -> name
+        description=form_data.description,
+        price=Decimal(form_data.price),  # Convert string to Decimal
+        category=form_data.category,
+        status="active",  # Set as active since it's being sold
+        seller_id=current_user.id,  # Get from authenticated user
+        original_model_id=None  # Can be enhanced later
+    )
+    
+    design = await design_asset_crud.create(db, obj_in=design_data.model_dump())
+    return design
+
+
 @router.get("/designs/{design_id}", response_model=DesignAssetRead)
 async def get_design(
     design_id: str,
-    db: AsyncSession = Depends(get_async_db)
+    db: AsyncSession = Depends(async_get_db)
 ):
     """Get a specific design asset and increment view count."""
     design = await design_asset_crud.get(db, id=design_id)
@@ -70,7 +95,7 @@ async def get_design(
 async def update_design(
     design_id: str,
     design_data: DesignAssetUpdate,
-    db: AsyncSession = Depends(get_async_db),
+    db: AsyncSession = Depends(async_get_db),
     current_user: User = Depends(get_current_user)
 ):
     """Update a design asset (only by seller)."""
@@ -94,7 +119,7 @@ async def update_design(
 @router.post("/designs/{design_id}/like")
 async def like_design(
     design_id: str,
-    db: AsyncSession = Depends(get_async_db),
+    db: AsyncSession = Depends(async_get_db),
     current_user: User = Depends(get_current_user)
 ):
     """Like a design asset."""
@@ -112,7 +137,7 @@ async def like_design(
 # Cart Endpoints
 @router.get("/cart", response_model=List[CartItemRead])
 async def get_cart(
-    db: AsyncSession = Depends(get_async_db),
+    db: AsyncSession = Depends(async_get_db),
     current_user: User = Depends(get_current_user)
 ):
     """Get current user's cart items."""
@@ -123,7 +148,7 @@ async def get_cart(
 @router.post("/cart", response_model=CartItemRead)
 async def add_to_cart(
     cart_item: CartItemCreate,
-    db: AsyncSession = Depends(get_async_db),
+    db: AsyncSession = Depends(async_get_db),
     current_user: User = Depends(get_current_user)
 ):
     """Add item to cart."""
@@ -137,7 +162,7 @@ async def add_to_cart(
 async def update_cart_item(
     cart_item_id: str,
     cart_item_update: CartItemUpdate,
-    db: AsyncSession = Depends(get_async_db),
+    db: AsyncSession = Depends(async_get_db),
     current_user: User = Depends(get_current_user)
 ):
     """Update cart item quantity."""
@@ -161,7 +186,7 @@ async def update_cart_item(
 @router.delete("/cart/{cart_item_id}")
 async def remove_from_cart(
     cart_item_id: str,
-    db: AsyncSession = Depends(get_async_db),
+    db: AsyncSession = Depends(async_get_db),
     current_user: User = Depends(get_current_user)
 ):
     """Remove item from cart."""
@@ -184,7 +209,7 @@ async def remove_from_cart(
 
 @router.delete("/cart")
 async def clear_cart(
-    db: AsyncSession = Depends(get_async_db),
+    db: AsyncSession = Depends(async_get_db),
     current_user: User = Depends(get_current_user)
 ):
     """Clear all items from cart."""
@@ -195,7 +220,7 @@ async def clear_cart(
 # Checkout Endpoint
 @router.post("/checkout", response_model=List[SalesTransactionRead])
 async def checkout(
-    db: AsyncSession = Depends(get_async_db),
+    db: AsyncSession = Depends(async_get_db),
     current_user: User = Depends(get_current_user)
 ):
     """Process checkout for all cart items."""
@@ -235,7 +260,7 @@ async def checkout(
 # Sales Endpoints
 @router.get("/sales/purchases", response_model=List[SalesTransactionRead])
 async def get_user_purchases(
-    db: AsyncSession = Depends(get_async_db),
+    db: AsyncSession = Depends(async_get_db),
     current_user: User = Depends(get_current_user)
 ):
     """Get current user's purchase history."""
@@ -245,7 +270,7 @@ async def get_user_purchases(
 
 @router.get("/sales/seller", response_model=List[SalesTransactionRead])
 async def get_seller_sales(
-    db: AsyncSession = Depends(get_async_db),
+    db: AsyncSession = Depends(async_get_db),
     current_user: User = Depends(get_current_user)
 ):
     """Get current user's sales history."""
@@ -256,7 +281,7 @@ async def get_seller_sales(
 # Payout Endpoints
 @router.get("/payouts", response_model=List[PayoutRead])
 async def get_payouts(
-    db: AsyncSession = Depends(get_async_db),
+    db: AsyncSession = Depends(async_get_db),
     current_user: User = Depends(get_current_user)
 ):
     """Get current user's payout history."""
@@ -267,7 +292,7 @@ async def get_payouts(
 @router.post("/payouts", response_model=PayoutRead)
 async def request_payout(
     payout_request: PayoutCreate,
-    db: AsyncSession = Depends(get_async_db),
+    db: AsyncSession = Depends(async_get_db),
     current_user: User = Depends(get_current_user)
 ):
     """Request a payout."""
