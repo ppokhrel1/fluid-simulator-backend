@@ -15,6 +15,15 @@ from ...schemas.commerce import (
     PayoutCreate, PayoutUpdate, PayoutRead,
     SellDesignForm
 )
+from ...schemas.sales_management import (
+    DesignUpdateRequest, DesignUpdateResponse,
+    PromotionRequest, PromotionResponse,
+    DesignDuplicateRequest, DesignDuplicateResponse,
+    DesignStatusUpdateRequest, DesignStatusUpdateResponse,
+    EnhancedDesignResponse
+)
+from ...schemas.analytics import DesignAnalyticsResponse
+from ...crud import crud_design_analytics, crud_promotion_campaign
 
 router = APIRouter()
 
@@ -302,3 +311,232 @@ async def request_payout(
     
     payout = await payout_crud.create(db, obj_in=payout_data)
     return payout
+
+
+# NEW DASHBOARD SALES MANAGEMENT ENDPOINTS
+
+@router.put("/designs/{design_id}/manage", response_model=DesignUpdateResponse)
+async def update_design_advanced(
+    design_id: str,
+    update_data: DesignUpdateRequest,
+    db: AsyncSession = Depends(async_get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Advanced design update with Dashboard features."""
+    design = await design_asset_crud.get(db, id=design_id)
+    if not design:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Design not found"
+        )
+    
+    if design.seller_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only the seller can update this design"
+        )
+    
+    # Convert optional fields to update dict
+    update_dict = {}
+    if update_data.designName is not None:
+        update_dict["name"] = update_data.designName
+    if update_data.description is not None:
+        update_dict["description"] = update_data.description
+    if update_data.price is not None:
+        update_dict["price"] = update_data.price
+    if update_data.category is not None:
+        update_dict["category"] = update_data.category
+    if update_data.status is not None:
+        update_dict["status"] = update_data.status
+    
+    # Update design
+    from datetime import datetime
+    update_dict["lastModified"] = datetime.utcnow()
+    
+    updated_design = await design_asset_crud.update(db, db_obj=design, obj_in=update_dict)
+    
+    return DesignUpdateResponse(
+        id=updated_design.id,
+        designName=updated_design.name,
+        description=updated_design.description,
+        price=updated_design.price,
+        category=updated_design.category,
+        status=updated_design.status,
+        lastModified=updated_design.lastModified or datetime.utcnow()
+    )
+
+
+@router.post("/designs/{design_id}/promote", response_model=PromotionResponse)
+async def promote_design(
+    design_id: str,
+    promotion_data: PromotionRequest,
+    db: AsyncSession = Depends(async_get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Create a promotion campaign for a design."""
+    design = await design_asset_crud.get(db, id=design_id)
+    if not design:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Design not found"
+        )
+    
+    if design.seller_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only the seller can promote this design"
+        )
+    
+    # Create promotion campaign
+    campaign = await crud_promotion_campaign.create(
+        db=db,
+        design_id=design_id,
+        user_id=current_user.id,
+        campaign_name=f"{design.name} - {promotion_data.promotion_type.title()} Campaign",
+        campaign_type=promotion_data.promotion_type,
+        duration_days=promotion_data.duration_days,
+        budget=promotion_data.budget
+    )
+    
+    return PromotionResponse(
+        campaign_id=campaign.id,
+        design_id=design_id,
+        campaign_type=campaign.campaign_type,
+        status=campaign.status,
+        duration_days=campaign.duration_days,
+        budget=campaign.budget,
+        created_at=campaign.created_at,
+        expires_at=campaign.expires_at,
+        estimated_reach=1000  # Mock value
+    )
+
+
+@router.get("/designs/{design_id}/analytics", response_model=DesignAnalyticsResponse)
+async def get_design_analytics(
+    design_id: str,
+    days: int = 30,
+    db: AsyncSession = Depends(async_get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Get analytics data for a design."""
+    design = await design_asset_crud.get(db, id=design_id)
+    if not design:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Design not found"
+        )
+    
+    if design.seller_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only the seller can view analytics for this design"
+        )
+    
+    # Get aggregated analytics
+    stats = await crud_design_analytics.get_aggregated_design_stats(db, design_id, days)
+    
+    return DesignAnalyticsResponse(
+        design_id=design_id,
+        views=stats.get('total_views', 0),
+        unique_viewers=stats.get('total_unique_viewers', 0),
+        likes=stats.get('total_likes', 0),
+        downloads=stats.get('total_downloads', 0),
+        revenue=stats.get('total_revenue', 0),
+        conversion_rate=stats.get('conversion_rate', 0.0),
+        average_rating=4.5,  # Mock value
+        total_reviews=10,    # Mock value
+        traffic_sources={
+            "direct": 40,
+            "search": 35,
+            "social": 15,
+            "referral": 10
+        },
+        performance_trend=[
+            {"date": "2025-10-01", "views": 50, "sales": 2},
+            {"date": "2025-10-02", "views": 45, "sales": 1},
+            {"date": "2025-10-03", "views": 60, "sales": 3}
+        ]
+    )
+
+
+@router.post("/designs/{design_id}/duplicate", response_model=DesignDuplicateResponse)
+async def duplicate_design(
+    design_id: str,
+    duplicate_data: DesignDuplicateRequest,
+    db: AsyncSession = Depends(async_get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Duplicate an existing design."""
+    original_design = await design_asset_crud.get(db, id=design_id)
+    if not original_design:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Design not found"
+        )
+    
+    if original_design.seller_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only the seller can duplicate this design"
+        )
+    
+    # Create duplicate design
+    from datetime import datetime
+    duplicate_data_dict = {
+        "name": duplicate_data.new_name,
+        "description": original_design.description if duplicate_data.copy_description else "",
+        "price": original_design.price if duplicate_data.copy_price else 0,
+        "category": original_design.category,
+        "status": duplicate_data.status,
+        "seller_id": current_user.id,
+        "original_model_id": original_design.original_model_id,
+        "uploadDate": datetime.utcnow(),
+        "lastModified": datetime.utcnow()
+    }
+    
+    new_design = await design_asset_crud.create(db, obj_in=duplicate_data_dict)
+    
+    return DesignDuplicateResponse(
+        original_id=design_id,
+        new_id=new_design.id,
+        new_name=new_design.name,
+        status=new_design.status,
+        created_at=new_design.uploadDate
+    )
+
+
+@router.put("/designs/{design_id}/status", response_model=DesignStatusUpdateResponse)
+async def update_design_status(
+    design_id: str,
+    status_data: DesignStatusUpdateRequest,
+    db: AsyncSession = Depends(async_get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Update design status (active, draft, paused, etc.)."""
+    design = await design_asset_crud.get(db, id=design_id)
+    if not design:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Design not found"
+        )
+    
+    if design.seller_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only the seller can update this design status"
+        )
+    
+    old_status = design.status
+    from datetime import datetime
+    updated_design = await design_asset_crud.update(
+        db, 
+        db_obj=design, 
+        obj_in={"status": status_data.status, "lastModified": datetime.utcnow()}
+    )
+    
+    return DesignStatusUpdateResponse(
+        id=design_id,
+        old_status=old_status,
+        new_status=updated_design.status,
+        updated_at=updated_design.lastModified or datetime.utcnow()
+    )

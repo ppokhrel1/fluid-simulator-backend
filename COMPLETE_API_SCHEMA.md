@@ -61,36 +61,36 @@ const loginResponseSchema = {
 
 ## 🛒 Commerce System Schemas
 
-### Design Asset Creation (Frontend Form)
+### Design Asset Creation (Frontend Form) - ✅ FRONTEND COMPATIBLE
 ```javascript
-// POST /api/v1/commerce/designs/sell (NEW ENDPOINT FOR FRONTEND)
+// POST /api/v1/commerce/designs/sell (NEW ENDPOINT - USE THIS FOR FRONTEND)
 const sellDesignFormSchema = {
-  designName: "string",                    // Required - Product name
-  description: "string",                   // Required - Product description  
-  price: "string",                        // Required - Price as string (will be converted)
-  category: "string",                     // Required - aerospace|automotive|mechanical|architecture|industrial|other
-  fileOrigin: "string",                   // Required - original|modified|commissioned
-  licenseType: "string",                  // Required - commercial|personal|attribution|non-commercial
-  originDeclaration: "boolean",           // Required - true if original work
-  qualityAssurance: "boolean",            // Required - true if quality assured
-  technicalSpecs: "string",               // Optional - Technical specifications
-  tags: "string",                         // Optional - Comma-separated tags
-  instructions: "string"                  // Optional - Usage instructions
+  designName: "string",                    // ✅ Required - Product name (converts to 'name')
+  description: "string",                   // ✅ Required - Product description  
+  price: "string",                        // ✅ Required - Price as string (auto-converts to Decimal)
+  category: "string",                     // ✅ Required - aerospace|automotive|mechanical|architecture|industrial|other
+  fileOrigin: "string",                   // ✅ Required - original|modified|commissioned
+  licenseType: "string",                  // ✅ Required - commercial|personal|attribution|non-commercial
+  originDeclaration: "boolean",           // ✅ Required - true if original work
+  qualityAssurance: "boolean",            // ✅ Required - true if quality assured
+  technicalSpecs: "string",               // ✅ Optional - Technical specifications
+  tags: "string",                         // ✅ Optional - Comma-separated tags
+  instructions: "string"                  // ✅ Optional - Usage instructions
 };
 
-// Response Schema
+// ✅ Frontend Success Response Schema
 const designAssetResponseSchema = {
   id: "string",                           // UUID
-  name: "string",
+  name: "string",                         // ✅ Converted from designName
   description: "string|null",
-  price: "number",                        // Decimal converted to number
+  price: "number",                        // ✅ Converted from string to Decimal
   category: "string|null", 
-  status: "string",                       // active|draft|sold|paused
+  status: "string",                       // ✅ Auto-set to "active"
   sales: "number",                        // Default 0
   revenue: "number",                      // Default 0.00
   views: "number",                        // Default 0
   likes: "number",                        // Default 0
-  seller_id: "number",
+  seller_id: "number",                    // ✅ Auto-set from JWT token
   original_model_id: "number|null",
   created_at: "string",                   // ISO datetime
   updated_at: "string"                    // ISO datetime
@@ -406,26 +406,39 @@ const loginUser = async (credentials) => {
 
 ### Commerce Flow
 ```javascript
-// 1. Sell Design (Frontend Form)
+// 1. Sell Design (Frontend Form) - ✅ WORKING ENDPOINT
 const sellDesign = async (formData, token) => {
-  const response = await fetch('http://127.0.0.1:8000/api/v1/commerce/designs/sell', {
-    method: 'POST',
-    headers: getAuthHeaders(token),
-    body: JSON.stringify({
-      designName: formData.designName,
-      description: formData.description,
-      price: formData.price,            // String OK - will be converted
-      category: formData.category,
-      fileOrigin: formData.fileOrigin,
-      licenseType: formData.licenseType,
-      originDeclaration: formData.originDeclaration,
-      qualityAssurance: formData.qualityAssurance,
-      technicalSpecs: formData.technicalSpecs || '',
-      tags: formData.tags || '',
-      instructions: formData.instructions || ''
-    })
-  });
-  return response.json();
+  try {
+    const response = await fetch('http://127.0.0.1:8000/api/v1/commerce/designs/sell', {
+      method: 'POST',
+      headers: getAuthHeaders(token),
+      body: JSON.stringify({
+        designName: formData.designName,        // ✅ Exact frontend field name
+        description: formData.description,
+        price: formData.price,                  // ✅ String OK - auto-converts to Decimal
+        category: formData.category,
+        fileOrigin: formData.fileOrigin,
+        licenseType: formData.licenseType,
+        originDeclaration: formData.originDeclaration,
+        qualityAssurance: formData.qualityAssurance,
+        technicalSpecs: formData.technicalSpecs || '',
+        tags: formData.tags || '',
+        instructions: formData.instructions || ''
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const result = await response.json();
+    console.log('✅ Design submitted successfully:', result);
+    return result;
+    
+  } catch (error) {
+    console.error('❌ Error submitting design:', error);
+    throw error;
+  }
 };
 
 // 2. Add to Cart
@@ -520,11 +533,19 @@ const getAISuggestions = async (modelId, token) => {
 3. **CORS**: Backend allows all origins, methods, and headers in development
 4. **Base URL**: Always use `http://127.0.0.1:8000` (not localhost:3000)
 
-### ✅ Schema Conversion Rules:
-1. **designName** → **name** (handled by `/designs/sell` endpoint)
-2. **String prices** → **Decimal/number** (auto-converted)
-3. **seller_id** → **Auto-set from authenticated user**
-4. **UUIDs** → **Generated automatically for IDs**
+### ✅ Schema Conversion Rules (FIXED):
+1. **designName** → **name** (✅ handled automatically by `/designs/sell` endpoint)
+2. **String prices** → **Decimal/number** (✅ auto-converted by backend)
+3. **seller_id** → **Auto-set from JWT token** (✅ no frontend action needed)
+4. **UUIDs** → **Generated automatically for IDs** (✅ no frontend action needed)
+5. **status** → **Auto-set to "active"** (✅ no frontend action needed)
+
+### 🎯 Frontend Action Required:
+**ONLY change the API endpoint URL:**
+- ❌ Old: `POST /api/v1/commerce/designs` 
+- ✅ New: `POST /api/v1/commerce/designs/sell`
+
+**Your existing form data is perfect - no changes needed!**
 
 ### ✅ Error Handling:
 ```javascript
@@ -538,3 +559,787 @@ const handleAPIError = async (response) => {
 ```
 
 This complete schema documentation should allow your frontend chatbot to generate perfectly compatible API calls for your backend!
+
+## 🎛️ Dashboard API Endpoints
+
+### 📊 Purchase Management
+Purchase management endpoints for user downloads and support.
+
+#### Get User Purchase Details
+```
+GET /api/v1/purchase-management/my-purchases
+Authorization: Bearer {jwt_token}
+```
+
+**Response:**
+```javascript
+{
+  "items": [
+    {
+      "id": 1,
+      "user_id": 123,
+      "stl_model_id": 456,
+      "purchase_date": "2024-01-15T10:30:00Z",
+      "purchase_price": 29.99,
+      "payment_method": "credit_card",
+      "download_count": 3,
+      "last_download": "2024-01-20T14:22:00Z",
+      "support_status": "resolved",
+      "stl_model": {
+        "title": "Mechanical Gear",
+        "category": "Engineering"
+      }
+    }
+  ],
+  "total": 15,
+  "page": 1,
+  "size": 50
+}
+```
+
+#### Download Purchased STL File
+```
+POST /api/v1/purchase-management/download/{purchase_id}
+Authorization: Bearer {jwt_token}
+```
+
+**Response:**
+```javascript
+{
+  "download_url": "https://storage.example.com/files/model_123.stl",
+  "expires_at": "2024-01-21T10:30:00Z",
+  "download_count": 4
+}
+```
+
+#### Submit Support Ticket
+```
+POST /api/v1/purchase-management/support-ticket
+Authorization: Bearer {jwt_token}
+Content-Type: application/json
+
+{
+  "purchase_id": 123,
+  "issue_type": "download_problem",
+  "subject": "Cannot download my purchased file",
+  "description": "The download link is not working properly",
+  "priority": "medium"
+}
+```
+
+**Response:**
+```javascript
+{
+  "id": 789,
+  "ticket_number": "TICK-2024-001",
+  "status": "open",
+  "created_at": "2024-01-21T15:45:00Z",
+  "estimated_resolution": "2024-01-23T15:45:00Z"
+}
+```
+
+#### Get Support Tickets
+```
+GET /api/v1/purchase-management/support-tickets
+Authorization: Bearer {jwt_token}
+```
+
+**Response:**
+```javascript
+{
+  "items": [
+    {
+      "id": 789,
+      "ticket_number": "TICK-2024-001",
+      "purchase_id": 123,
+      "issue_type": "download_problem",
+      "subject": "Cannot download my purchased file",
+      "status": "in_progress",
+      "priority": "medium",
+      "created_at": "2024-01-21T15:45:00Z",
+      "updated_at": "2024-01-22T09:15:00Z"
+    }
+  ],
+  "total": 3,
+  "page": 1,
+  "size": 50
+}
+```
+
+### 📈 Analytics Dashboard
+Comprehensive analytics endpoints for design and user performance tracking.
+
+#### Get Design Analytics
+```
+GET /api/v1/analytics/design-analytics?period=month&design_id=123
+Authorization: Bearer {jwt_token}
+```
+
+**Response:**
+```javascript
+{
+  "design_id": 123,
+  "period": "month",
+  "total_views": 1250,
+  "unique_views": 890,
+  "total_downloads": 45,
+  "total_purchases": 32,
+  "revenue_generated": 960.00,
+  "average_rating": 4.7,
+  "conversion_rate": 3.6,
+  "geographic_data": [
+    {"country": "United States", "views": 450, "purchases": 12},
+    {"country": "Germany", "views": 280, "purchases": 8},
+    {"country": "Japan", "views": 220, "purchases": 6}
+  ],
+  "daily_stats": [
+    {"date": "2024-01-01", "views": 42, "downloads": 2, "purchases": 1},
+    {"date": "2024-01-02", "views": 38, "downloads": 1, "purchases": 2}
+  ]
+}
+```
+
+#### Get User Analytics
+```
+GET /api/v1/analytics/user-analytics?period=week
+Authorization: Bearer {jwt_token}
+```
+
+**Response:**
+```javascript
+{
+  "period": "week",
+  "profile_views": 156,
+  "total_designs": 12,
+  "total_sales": 28,
+  "total_revenue": 840.00,
+  "follower_count": 245,
+  "average_design_rating": 4.5,
+  "top_performing_designs": [
+    {
+      "design_id": 123,
+      "title": "Mechanical Gear",
+      "views": 890,
+      "purchases": 32,
+      "revenue": 960.00
+    }
+  ],
+  "engagement_metrics": {
+    "likes_received": 89,
+    "comments_received": 23,
+    "shares": 12
+  }
+}
+```
+
+#### Get Sales Analytics
+```
+GET /api/v1/analytics/sales?period=month&start_date=2024-01-01&end_date=2024-01-31
+Authorization: Bearer {jwt_token}
+```
+
+**Response:**
+```javascript
+{
+  "period": "month",
+  "total_sales": 156,
+  "total_revenue": 4680.00,
+  "average_order_value": 30.00,
+  "top_selling_designs": [
+    {
+      "design_id": 123,
+      "title": "Mechanical Gear",
+      "sales_count": 32,
+      "revenue": 960.00
+    }
+  ],
+  "sales_by_category": [
+    {"category": "Engineering", "sales": 45, "revenue": 1350.00},
+    {"category": "Art", "sales": 38, "revenue": 1140.00}
+  ],
+  "daily_sales": [
+    {"date": "2024-01-01", "sales": 5, "revenue": 150.00},
+    {"date": "2024-01-02", "sales": 7, "revenue": 210.00}
+  ]
+}
+```
+
+### 💳 Payment Methods Management
+Secure payment method management for users.
+
+#### Get Payment Methods
+```
+GET /api/v1/payment-methods
+Authorization: Bearer {jwt_token}
+```
+
+**Response:**
+```javascript
+{
+  "items": [
+    {
+      "id": 1,
+      "type": "credit_card",
+      "provider": "stripe",
+      "last_four": "4242",
+      "expiry_month": 12,
+      "expiry_year": 2025,
+      "cardholder_name": "John Doe",
+      "is_default": true,
+      "is_verified": true,
+      "created_at": "2024-01-15T10:30:00Z"
+    },
+    {
+      "id": 2,
+      "type": "paypal",
+      "provider": "paypal",
+      "email": "john.doe@example.com",
+      "is_default": false,
+      "is_verified": true,
+      "created_at": "2024-01-10T14:20:00Z"
+    }
+  ],
+  "total": 2
+}
+```
+
+#### Add Payment Method
+```
+POST /api/v1/payment-methods
+Authorization: Bearer {jwt_token}
+Content-Type: application/json
+
+{
+  "type": "credit_card",
+  "provider": "stripe",
+  "card_number": "4242424242424242",
+  "expiry_month": 12,
+  "expiry_year": 2025,
+  "cvc": "123",
+  "cardholder_name": "John Doe",
+  "billing_address": {
+    "street": "123 Main St",
+    "city": "New York",
+    "state": "NY",
+    "postal_code": "10001",
+    "country": "US"
+  }
+}
+```
+
+**Response:**
+```javascript
+{
+  "id": 3,
+  "type": "credit_card",
+  "provider": "stripe",
+  "last_four": "4242",
+  "expiry_month": 12,
+  "expiry_year": 2025,
+  "cardholder_name": "John Doe",
+  "is_default": false,
+  "is_verified": false,
+  "verification_required": true,
+  "created_at": "2024-01-21T16:45:00Z"
+}
+```
+
+#### Verify Payment Method
+```
+POST /api/v1/payment-methods/{payment_method_id}/verify
+Authorization: Bearer {jwt_token}
+Content-Type: application/json
+
+{
+  "verification_code": "123456"
+}
+```
+
+**Response:**
+```javascript
+{
+  "id": 3,
+  "is_verified": true,
+  "verified_at": "2024-01-21T17:00:00Z",
+  "message": "Payment method verified successfully"
+}
+```
+
+#### Set Default Payment Method
+```
+POST /api/v1/payment-methods/{payment_method_id}/set-default
+Authorization: Bearer {jwt_token}
+```
+
+**Response:**
+```javascript
+{
+  "id": 3,
+  "is_default": true,
+  "message": "Payment method set as default"
+}
+```
+
+#### Delete Payment Method
+```
+DELETE /api/v1/payment-methods/{payment_method_id}
+Authorization: Bearer {jwt_token}
+```
+
+**Response:**
+```javascript
+{
+  "message": "Payment method deleted successfully"
+}
+```
+
+#### Get Payout Settings
+```
+GET /api/v1/payment-methods/payout-settings
+Authorization: Bearer {jwt_token}
+```
+
+**Response:**
+```javascript
+{
+  "id": 1,
+  "method": "bank_transfer",
+  "bank_name": "Chase Bank",
+  "account_number": "****1234",
+  "routing_number": "****5678",
+  "account_holder_name": "John Doe",
+  "minimum_payout": 25.00,
+  "payout_schedule": "weekly",
+  "is_verified": true,
+  "created_at": "2024-01-15T10:30:00Z"
+}
+```
+
+#### Update Payout Settings
+```
+PUT /api/v1/payment-methods/payout-settings
+Authorization: Bearer {jwt_token}
+Content-Type: application/json
+
+{
+  "method": "bank_transfer",
+  "bank_name": "Chase Bank",
+  "account_number": "1234567890",
+  "routing_number": "987654321",
+  "account_holder_name": "John Doe",
+  "minimum_payout": 50.00,
+  "payout_schedule": "monthly"
+}
+```
+
+### 🛠️ Advanced Tools
+Advanced tools for pricing optimization, review management, and promotion campaigns.
+
+#### Get Pricing Suggestions
+```
+POST /api/v1/advanced-tools/pricing-suggestions
+Authorization: Bearer {jwt_token}
+Content-Type: application/json
+
+{
+  "design_id": 123,
+  "category": "Engineering",
+  "complexity": "high",
+  "file_size_mb": 15.5,
+  "print_time_hours": 8.5
+}
+```
+
+**Response:**
+```javascript
+{
+  "design_id": 123,
+  "suggested_price": 35.00,
+  "price_range": {
+    "min": 25.00,
+    "max": 45.00
+  },
+  "market_analysis": {
+    "average_category_price": 32.50,
+    "similar_designs_count": 45,
+    "competition_level": "medium"
+  },
+  "factors": [
+    {"factor": "High complexity", "impact": "+15%"},
+    {"factor": "Large file size", "impact": "+10%"},
+    {"factor": "Long print time", "impact": "+5%"}
+  ]
+}
+```
+
+#### Bulk Update Reviews
+```
+POST /api/v1/advanced-tools/bulk-review-update
+Authorization: Bearer {jwt_token}
+Content-Type: application/json
+
+{
+  "review_ids": [1, 2, 3, 4, 5],
+  "action": "mark_helpful",
+  "response_template": "Thank you for your feedback!"
+}
+```
+
+**Response:**
+```javascript
+{
+  "updated_count": 5,
+  "failed_count": 0,
+  "message": "Reviews updated successfully"
+}
+```
+
+#### Create Promotion Campaign
+```
+POST /api/v1/advanced-tools/promotion-campaigns
+Authorization: Bearer {jwt_token}
+Content-Type: application/json
+
+{
+  "name": "Summer Sale 2024",
+  "description": "25% off all engineering designs",
+  "discount_type": "percentage",
+  "discount_value": 25.0,
+  "start_date": "2024-06-01T00:00:00Z",
+  "end_date": "2024-08-31T23:59:59Z",
+  "design_ids": [123, 456, 789],
+  "target_audience": "returning_customers",
+  "budget": 500.00
+}
+```
+
+**Response:**
+```javascript
+{
+  "id": 10,
+  "name": "Summer Sale 2024",
+  "status": "scheduled",
+  "designs_count": 3,
+  "estimated_reach": 1250,
+  "created_at": "2024-05-15T10:30:00Z",
+  "campaign_url": "https://example.com/campaign/summer-sale-2024"
+}
+```
+
+#### Get Promotion Campaigns
+```
+GET /api/v1/advanced-tools/promotion-campaigns
+Authorization: Bearer {jwt_token}
+```
+
+**Response:**
+```javascript
+{
+  "items": [
+    {
+      "id": 10,
+      "name": "Summer Sale 2024",
+      "status": "active",
+      "discount_type": "percentage",
+      "discount_value": 25.0,
+      "start_date": "2024-06-01T00:00:00Z",
+      "end_date": "2024-08-31T23:59:59Z",
+      "designs_count": 3,
+      "total_uses": 45,
+      "revenue_generated": 1125.00,
+      "created_at": "2024-05-15T10:30:00Z"
+    }
+  ],
+  "total": 8,
+  "page": 1,
+  "size": 50
+}
+```
+
+#### Update Promotion Campaign
+```
+PUT /api/v1/advanced-tools/promotion-campaigns/{campaign_id}
+Authorization: Bearer {jwt_token}
+Content-Type: application/json
+
+{
+  "name": "Extended Summer Sale 2024",
+  "discount_value": 30.0,
+  "end_date": "2024-09-15T23:59:59Z",
+  "budget": 750.00
+}
+```
+
+**Response:**
+```javascript
+{
+  "id": 10,
+  "name": "Extended Summer Sale 2024",
+  "discount_value": 30.0,
+  "end_date": "2024-09-15T23:59:59Z",
+  "updated_at": "2024-07-01T14:20:00Z",
+  "message": "Campaign updated successfully"
+}
+```
+
+#### Delete Promotion Campaign
+```
+DELETE /api/v1/advanced-tools/promotion-campaigns/{campaign_id}
+Authorization: Bearer {jwt_token}
+```
+
+**Response:**
+```javascript
+{
+  "message": "Promotion campaign deleted successfully"
+}
+```
+
+### 🏪 Enhanced Sales Management
+Extended sales management endpoints integrated with commerce system.
+
+#### Edit Design Details
+```
+PUT /api/v1/commerce/designs/{design_id}/edit
+Authorization: Bearer {jwt_token}
+Content-Type: application/json
+
+{
+  "title": "Updated Mechanical Gear v2",
+  "description": "Improved version with better tolerances",
+  "price": 35.00,
+  "category": "Engineering",
+  "tags": ["mechanical", "gear", "engineering", "precision"],
+  "is_featured": true
+}
+```
+
+**Response:**
+```javascript
+{
+  "id": 123,
+  "title": "Updated Mechanical Gear v2",
+  "price": 35.00,
+  "is_featured": true,
+  "updated_at": "2024-01-21T16:45:00Z",
+  "message": "Design updated successfully"
+}
+```
+
+#### Promote Design
+```
+POST /api/v1/commerce/designs/{design_id}/promote
+Authorization: Bearer {jwt_token}
+Content-Type: application/json
+
+{
+  "promotion_type": "featured",
+  "duration_days": 30,
+  "budget": 100.00,
+  "target_audience": "engineering_enthusiasts"
+}
+```
+
+**Response:**
+```javascript
+{
+  "design_id": 123,
+  "promotion_id": "PROMO-2024-001",
+  "status": "active",
+  "expires_at": "2024-02-21T16:45:00Z",
+  "estimated_reach": 5000,
+  "cost": 100.00
+}
+```
+
+#### Get Design Performance
+```
+GET /api/v1/commerce/designs/{design_id}/performance?days=30
+Authorization: Bearer {jwt_token}
+```
+
+**Response:**
+```javascript
+{
+  "design_id": 123,
+  "period_days": 30,
+  "views": 1250,
+  "downloads": 45,
+  "purchases": 32,
+  "revenue": 960.00,
+  "rating": 4.7,
+  "reviews_count": 23,
+  "conversion_rate": 2.56,
+  "trending_score": 8.5,
+  "rank_in_category": 3
+}
+```
+
+## 🔧 Dashboard Schema Models
+
+### Purchase Details Model
+```javascript
+{
+  "id": "integer",
+  "user_id": "integer",
+  "stl_model_id": "integer", 
+  "purchase_date": "datetime",
+  "purchase_price": "decimal",
+  "payment_method": "string",
+  "download_count": "integer",
+  "last_download": "datetime",
+  "support_status": "string" // pending, in_progress, resolved, closed
+}
+```
+
+### Support Ticket Model
+```javascript
+{
+  "id": "integer",
+  "purchase_id": "integer",
+  "user_id": "integer",
+  "issue_type": "string", // download_problem, quality_issue, refund_request, other
+  "subject": "string",
+  "description": "text",
+  "status": "string", // open, in_progress, resolved, closed
+  "priority": "string", // low, medium, high, urgent
+  "created_at": "datetime",
+  "updated_at": "datetime",
+  "resolved_at": "datetime"
+}
+```
+
+### Design Analytics Model
+```javascript
+{
+  "id": "integer",
+  "design_id": "integer",
+  "user_id": "integer",
+  "date": "date",
+  "views": "integer",
+  "unique_views": "integer", 
+  "downloads": "integer",
+  "purchases": "integer",
+  "revenue": "decimal",
+  "conversion_rate": "decimal",
+  "average_rating": "decimal"
+}
+```
+
+### User Analytics Model  
+```javascript
+{
+  "id": "integer",
+  "user_id": "integer",
+  "date": "date",
+  "profile_views": "integer",
+  "total_designs": "integer",
+  "total_sales": "integer",
+  "total_revenue": "decimal",
+  "follower_count": "integer",
+  "following_count": "integer",
+  "engagement_score": "decimal"
+}
+```
+
+### Payment Method Model
+```javascript
+{
+  "id": "integer",
+  "user_id": "integer",
+  "type": "string", // credit_card, debit_card, paypal, bank_transfer
+  "provider": "string", // stripe, paypal, square
+  "last_four": "string",
+  "expiry_month": "integer",
+  "expiry_year": "integer", 
+  "cardholder_name": "string",
+  "billing_address": "json",
+  "is_default": "boolean",
+  "is_verified": "boolean",
+  "created_at": "datetime"
+}
+```
+
+### Payout Settings Model
+```javascript
+{
+  "id": "integer",
+  "user_id": "integer",
+  "method": "string", // bank_transfer, paypal, stripe
+  "account_details": "json", // encrypted account information
+  "minimum_payout": "decimal",
+  "payout_schedule": "string", // daily, weekly, monthly
+  "is_verified": "boolean",
+  "created_at": "datetime",
+  "updated_at": "datetime"
+}
+```
+
+### Promotion Campaign Model
+```javascript
+{
+  "id": "integer",
+  "user_id": "integer", 
+  "name": "string",
+  "description": "text",
+  "discount_type": "string", // percentage, fixed_amount
+  "discount_value": "decimal",
+  "start_date": "datetime",
+  "end_date": "datetime",
+  "design_ids": "json", // array of design IDs
+  "target_audience": "string",
+  "budget": "decimal",
+  "total_uses": "integer",
+  "revenue_generated": "decimal",
+  "status": "string", // draft, scheduled, active, paused, expired
+  "created_at": "datetime"
+}
+```
+
+## 🎯 Dashboard Integration Notes
+
+### Authentication Requirements
+All Dashboard endpoints require JWT authentication with appropriate user permissions.
+
+### Rate Limiting
+- Analytics endpoints: 100 requests per hour
+- Payment methods: 50 requests per hour  
+- Advanced tools: 200 requests per hour
+- Purchase management: 1000 requests per hour
+
+### Error Responses
+```javascript
+// Validation Error
+{
+  "detail": "Validation failed",
+  "errors": [
+    {
+      "field": "price",
+      "message": "Price must be greater than 0"
+    }
+  ]
+}
+
+// Authorization Error
+{
+  "detail": "Not authorized to access this resource"
+}
+
+// Not Found Error
+{
+  "detail": "Resource not found"
+}
+```
+
+### Pagination Parameters
+```javascript
+// Query parameters for paginated endpoints
+{
+  "page": 1,        // Page number (default: 1)
+  "size": 50,       // Items per page (default: 50, max: 100)
+  "sort": "created_at", // Sort field
+  "order": "desc"   // Sort order: asc, desc
+}
+```
+
+This comprehensive Dashboard API documentation provides complete integration specifications for all new functionality including purchase management, analytics, payment methods, and advanced tools!
