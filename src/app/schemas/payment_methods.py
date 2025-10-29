@@ -9,7 +9,7 @@ from decimal import Decimal
 # Payment Method Schemas
 class PaymentMethodCreate(BaseModel):
     """Schema for creating payment methods."""
-    method_type: str = Field(..., regex="^(paypal|bank_account|stripe|venmo|cashapp)$")
+    method_type: str = Field(..., pattern="^(paypal|bank_account|stripe|venmo|cashapp)$")
     provider: str = Field(..., min_length=1, max_length=100)
     account_info: str = Field(..., min_length=1)  # Will be encrypted
     is_primary: bool = False
@@ -51,9 +51,9 @@ class PayoutSettingsUpdate(BaseModel):
     """Schema for updating payout settings."""
     auto_payout_enabled: Optional[bool] = None
     payout_threshold: Optional[Decimal] = Field(None, ge=Decimal("10.00"), le=Decimal("10000.00"))
-    payout_schedule: Optional[str] = Field(None, regex="^(weekly|monthly|manual)$")
+    payout_schedule: Optional[str] = Field(None, pattern="^(weekly|monthly|manual)$")
     primary_payment_method_id: Optional[str] = None
-    currency: Optional[str] = Field(None, regex="^(USD|EUR|GBP|CAD|AUD)$")
+    currency: Optional[str] = Field(None, pattern="^(USD|EUR|GBP|CAD|AUD)$")
     tax_info: Optional[Dict[str, Any]] = Field(default_factory=dict)
 
 

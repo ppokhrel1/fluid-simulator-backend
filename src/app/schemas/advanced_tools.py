@@ -11,7 +11,7 @@ class PricingAnalysisRequest(BaseModel):
     """Request schema for pricing analysis."""
     design_ids: List[str] = Field(..., min_items=1)
     include_competitors: bool = True
-    market_analysis_depth: str = Field(default="standard", regex="^(basic|standard|detailed)$")
+    market_analysis_depth: str = Field(default="standard", pattern="^(basic|standard|detailed)$")
 
 
 class MarketAnalysis(BaseModel):
@@ -99,7 +99,7 @@ class PromotionCampaignRequest(BaseModel):
     """Request schema for creating promotion campaigns."""
     campaign_name: str = Field(..., min_length=3, max_length=255)
     design_ids: List[str] = Field(..., min_items=1)
-    campaign_type: str = Field(..., regex="^(featured|boost|sponsored|premium|flash_sale)$")
+    campaign_type: str = Field(..., pattern="^(featured|boost|sponsored|premium|flash_sale)$")
     duration: int = Field(..., ge=1, le=90)  # days
     budget: Decimal = Field(..., gt=0)
     target_audience: Dict[str, Any] = Field(default_factory=dict)

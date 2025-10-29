@@ -53,7 +53,7 @@ class UserAnalytics(Base):
     __tablename__ = "user_analytics"
     
     id = Column(Integer, primary_key=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
     date = Column(Date, nullable=False, default=date.today)
     total_views = Column(Integer, default=0)
     total_sales = Column(Integer, default=0)

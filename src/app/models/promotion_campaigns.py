@@ -16,7 +16,7 @@ class PromotionCampaign(Base):
     
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     design_id = Column(String(255), ForeignKey("design_assets.id"), nullable=False)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)  # Campaign owner
+    user_id = Column(Integer, ForeignKey("user.id"), nullable=False)  # Campaign owner
     campaign_name = Column(String(255), nullable=False)
     campaign_type = Column(String(100), nullable=False)  # featured, boost, sponsored, etc.
     duration_days = Column(Integer, nullable=False)

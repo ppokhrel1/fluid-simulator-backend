@@ -16,7 +16,7 @@ class DesignUpdateRequest(BaseModel):
     tags: Optional[List[str]] = Field(default_factory=list)
     technicalSpecs: Optional[str] = None
     instructions: Optional[str] = None
-    status: Optional[str] = Field(None, regex="^(active|draft|paused|sold)$")
+    status: Optional[str] = Field(None, pattern="^(active|draft|paused|sold)$")
 
 
 class DesignUpdateResponse(BaseModel):
@@ -37,7 +37,7 @@ class DesignUpdateResponse(BaseModel):
 # Promotion Schemas
 class PromotionRequest(BaseModel):
     """Request schema for promoting designs."""
-    promotion_type: str = Field(..., regex="^(featured|boost|sponsored|premium)$")
+    promotion_type: str = Field(..., pattern="^(featured|boost|sponsored|premium)$")
     duration_days: int = Field(..., ge=1, le=90)
     budget: Optional[Decimal] = Field(None, gt=0)
     target_categories: Optional[List[str]] = Field(default_factory=list)
@@ -68,7 +68,7 @@ class DesignDuplicateRequest(BaseModel):
     copy_price: bool = True
     copy_description: bool = True
     copy_tags: bool = True
-    status: str = Field(default="draft", regex="^(active|draft)$")
+    status: str = Field(default="draft", pattern="^(active|draft)$")
 
 
 class DesignDuplicateResponse(BaseModel):
@@ -87,7 +87,7 @@ class DesignDuplicateResponse(BaseModel):
 # Status Update Schema
 class DesignStatusUpdateRequest(BaseModel):
     """Request schema for updating design status."""
-    status: str = Field(..., regex="^(active|draft|paused|sold|featured|promoted)$")
+    status: str = Field(..., pattern="^(active|draft|paused|sold|featured|promoted)$")
     reason: Optional[str] = None
 
 

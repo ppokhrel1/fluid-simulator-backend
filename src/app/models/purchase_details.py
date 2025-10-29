@@ -16,7 +16,7 @@ class PurchaseDetails(Base):
     __tablename__ = "purchase_details"
     
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    purchase_id = Column(String(255), ForeignKey("purchases.id"), nullable=False)
+    transaction_id = Column(String(255), ForeignKey("sales_transactions.id"), nullable=False)
     item_details = Column(JSON, nullable=False, default=dict)
     download_links = Column(JSON, default=list)
     download_count = Column(Integer, default=0)

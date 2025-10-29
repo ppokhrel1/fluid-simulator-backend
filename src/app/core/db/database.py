@@ -9,12 +9,10 @@ class Base(DeclarativeBase):
     pass
 
 # Database selection - use Supabase if configured, otherwise SQLite
-use_supabase = hasattr(settings, 'POSTGRES_URL') and settings.POSTGRES_URL and "supabase" in settings.POSTGRES_URL
-
-if use_supabase:
+if hasattr(settings, 'POSTGRES_URL') and settings.POSTGRES_URL and "supabase" in settings.POSTGRES_URL:
     # Use Supabase PostgreSQL for production
     DATABASE_URL = settings.POSTGRES_URL
-    print(f"🌐 Connecting to Supabase: {DATABASE_URL[:50]}...")
+    print(f"🌐 Attempting Supabase connection: {DATABASE_URL[:50]}...")
     
     # Async engine for PostgreSQL/Supabase
     async_engine = create_async_engine(
@@ -23,9 +21,16 @@ if use_supabase:
         future=True,
         pool_pre_ping=True,  # PostgreSQL specific - validates connections
         pool_recycle=300,    # Recycle connections every 5 minutes
+        connect_args={
+            "server_settings": {
+                "application_name": "fluid-simulator-backend",
+            }
+        }
     )
+    print("✅ Supabase engine created (connection will be tested on first use)")
+    print("⚠️  If connection fails, server will automatically fall back to SQLite")
 else:
-    # Fallback to SQLite for development
+    # Fallback to SQLite for development  
     DATABASE_URL = f"{settings.SQLITE_ASYNC_PREFIX}{settings.SQLITE_URI}"
     print(f"📁 Using SQLite database: {DATABASE_URL}")
     

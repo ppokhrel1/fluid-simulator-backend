@@ -15,14 +15,14 @@ class SupportTicket(Base):
     __tablename__ = "support_tickets"
     
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    purchase_id = Column(String(255), ForeignKey("purchases.id"), nullable=False)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    transaction_id = Column(String(255), ForeignKey("sales_transactions.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
     issue_type = Column(String(100), nullable=False)
     subject = Column(String(255), nullable=False)
     description = Column(Text, nullable=False)
     status = Column(String(50), default="open")  # open, in_progress, resolved, closed
     priority = Column(String(20), default="medium")  # low, medium, high, urgent
-    assigned_to = Column(Integer, ForeignKey("users.id"), nullable=True)
+    assigned_to = Column(Integer, ForeignKey("user.id"), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     resolved_at = Column(DateTime, nullable=True)

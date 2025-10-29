@@ -15,7 +15,7 @@ class PaymentMethod(Base):
     __tablename__ = "payment_methods"
     
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
     method_type = Column(String(50), nullable=False)  # paypal, bank_account, stripe, etc.
     provider = Column(String(100), nullable=False)  # PayPal, Bank of America, etc.
     account_info = Column(Text, nullable=False)  # Encrypted account details
@@ -49,7 +49,7 @@ class PayoutSettings(Base):
     __tablename__ = "payout_settings"
     
     id = Column(Integer, primary_key=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, unique=True)
+    user_id = Column(Integer, ForeignKey("user.id"), nullable=False, unique=True)
     auto_payout_enabled = Column(Boolean, default=False)
     payout_threshold = Column(String(10), default="100.00")  # Minimum amount for auto payout
     payout_schedule = Column(String(20), default="monthly")  # weekly, monthly, manual

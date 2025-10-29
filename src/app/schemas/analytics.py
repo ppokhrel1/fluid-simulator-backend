@@ -99,7 +99,7 @@ class UserAnalyticsResponse(BaseModel):
 # Performance Analytics Request
 class AnalyticsRequest(BaseModel):
     """Request parameters for analytics data."""
-    period: str = Field(default="30_days", regex="^(7_days|30_days|90_days|1_year)$")
+    period: str = Field(default="30_days", pattern="^(7_days|30_days|90_days|1_year)$")
     start_date: Optional[date] = None
     end_date: Optional[date] = None
     metrics: Optional[List[str]] = Field(default_factory=list)

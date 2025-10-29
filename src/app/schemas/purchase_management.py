@@ -46,7 +46,7 @@ class SupportTicketRequest(BaseModel):
     issue_type: str = Field(..., description="Type of issue (download, quality, refund, etc.)")
     subject: str = Field(..., min_length=5, max_length=255)
     description: str = Field(..., min_length=10)
-    priority: str = Field(default="medium", regex="^(low|medium|high|urgent)$")
+    priority: str = Field(default="medium", pattern="^(low|medium|high|urgent)$")
     attachments: Optional[List[str]] = Field(default_factory=list)
 
 
