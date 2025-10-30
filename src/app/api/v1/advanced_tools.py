@@ -28,6 +28,18 @@ from ...schemas.advanced_tools import (
 from ...crud import crud_promotion_campaign
 from ...crud.crud_commerce import design_asset_crud
 
+def extract_list(result):
+    # tuple: (list, count)
+    if isinstance(result, tuple):
+        return result[0]
+
+    # dict pagination shape: {"data": [...], "total_count": N}
+    if isinstance(result, dict) and "data" in result:
+        return result["data"]
+
+    # otherwise return as-is (if it's already a list)
+    return result
+
 router = APIRouter(prefix="/tools", tags=["Advanced Tools"])
 
 
@@ -136,7 +148,7 @@ async def analyze_pricing(
         
         results.append(analysis)
     
-    return results
+    return extract_list(results)
 
 
 @router.get("/reviews/{user_id}", response_model=ReviewManagementResponse)

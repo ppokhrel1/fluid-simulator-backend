@@ -5,6 +5,19 @@ from decimal import Decimal
 from typing import List, Optional
 from pydantic import BaseModel, Field
 
+# Add this after your existing schemas, or in a common 'pagination' file
+
+from typing import Generic, TypeVar, List
+from pydantic.generics import GenericModel # Import GenericModel
+
+# Define a TypeVar to hold the schema type (e.g., DesignAssetRead)
+T = TypeVar('T')
+
+class PaginatedResponse(GenericModel, Generic[T]):
+    """Generic schema for paginated responses."""
+    data: List[T] = Field(description="The list of retrieved items.")
+    total_count: int = Field(description="The total number of items available.")
+
 
 # Design Asset Schemas
 class DesignAssetBase(BaseModel):
@@ -50,6 +63,12 @@ class DesignAssetRead(DesignAssetBase):
     class Config:
         from_attributes = True
 
+
+
+# Example usage of the generic schema:
+class DesignAssetPaginatedRead(PaginatedResponse[DesignAssetRead]):
+    """Specific paginated schema for design assets."""
+    pass
 
 # Sell Design Form Schema
 class SellDesignForm(BaseModel):
@@ -177,3 +196,5 @@ class PayoutRead(PayoutBase):
     
     class Config:
         from_attributes = True
+
+

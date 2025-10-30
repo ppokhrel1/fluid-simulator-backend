@@ -14,7 +14,20 @@ from ...schemas.chatbot import (
     ChatMessage, ChatResponse
 )
 
+def extract_list(result):
+    # tuple: (list, count)
+    if isinstance(result, tuple):
+        return result[0]
+
+    # dict pagination shape: {"data": [...], "total_count": N}
+    if isinstance(result, dict) and "data" in result:
+        return result["data"]
+
+    # otherwise return as-is (if it's already a list)
+    return result
+
 router = APIRouter()
+
 
 
 @router.get("/sessions", response_model=List[ChatSessionRead])
@@ -24,7 +37,7 @@ async def get_chat_sessions(
 ):
     """Get all chat sessions for the current user."""
     sessions = await chat_session_crud.get_user_sessions(db, current_user.id)
-    return sessions
+    return extract_list(sessions)
 
 
 @router.post("/sessions", response_model=ChatSessionRead)
@@ -37,7 +50,7 @@ async def create_chat_session(
     session_dict = session_data.model_dump()
     session_dict["user_id"] = current_user.id
     session = await chat_session_crud.create(db, obj_in=session_dict)
-    return session
+    return extract_list(session)
 
 
 @router.get("/sessions/{session_id}", response_model=ChatSessionRead)
@@ -136,7 +149,7 @@ async def get_chat_messages(
         )
     
     messages = await chat_history_crud.get_session_messages(db, session_id, limit, offset)
-    return messages
+    return extract_list(messages)
 
 
 @router.post("/sessions/{session_id}/messages", response_model=ChatResponse)

@@ -13,20 +13,31 @@ from ...schemas.commerce import (
     CartItemCreate, CartItemUpdate, CartItemRead,
     SalesTransactionCreate, SalesTransactionRead,
     PayoutCreate, PayoutUpdate, PayoutRead,
-    SellDesignForm
+    SellDesignForm, DesignAssetPaginatedRead
 )
 from ...schemas.sales_management import (
     DesignUpdateRequest, DesignUpdateResponse,
     PromotionRequest, PromotionResponse,
     DesignDuplicateRequest, DesignDuplicateResponse,
     DesignStatusUpdateRequest, DesignStatusUpdateResponse,
-    EnhancedDesignResponse
+    EnhancedDesignResponse, 
 )
 from ...schemas.analytics import DesignAnalyticsResponse
 from ...crud import crud_design_analytics, crud_promotion_campaign
 
 router = APIRouter()
 
+def extract_list(result):
+    # tuple: (list, count)
+    if isinstance(result, tuple):
+        return result[0]
+
+    # dict pagination shape: {"data": [...], "total_count": N}
+    if isinstance(result, dict) and "data" in result:
+        return result["data"]
+
+    # otherwise return as-is (if it's already a list)
+    return result
 
 # Design Assets Endpoints
 @router.get("/designs", response_model=List[DesignAssetRead])
@@ -41,7 +52,7 @@ async def get_designs(
         designs = await design_asset_crud.get_by_category(db, category, limit, offset)
     else:
         designs = await design_asset_crud.get_multi(db, limit=limit, offset=offset)
-    return designs
+    return extract_list(designs)
 
 
 @router.post("/designs", response_model=DesignAssetRead)
@@ -151,7 +162,7 @@ async def get_cart(
 ):
     """Get current user's cart items."""
     cart_items = await cart_item_crud.get_user_cart(db, current_user.id)
-    return cart_items
+    return extract_list(cart_items)
 
 
 @router.post("/cart", response_model=CartItemRead)
@@ -263,7 +274,7 @@ async def checkout(
     # Clear cart after successful checkout
     await cart_item_crud.clear_user_cart(db, current_user.id)
     
-    return transactions
+    return extract_list(transactions)
 
 
 # Sales Endpoints
@@ -284,7 +295,7 @@ async def get_seller_sales(
 ):
     """Get current user's sales history."""
     sales = await sales_transaction_crud.get_seller_sales(db, current_user.id)
-    return sales
+    return extract_list(sales)
 
 
 # Payout Endpoints
@@ -295,7 +306,7 @@ async def get_payouts(
 ):
     """Get current user's payout history."""
     payouts = await payout_crud.get_seller_payouts(db, current_user.id)
-    return payouts
+    return extract_list(payouts)
 
 
 @router.post("/payouts", response_model=PayoutRead)

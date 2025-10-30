@@ -22,6 +22,17 @@ from ...crud import crud_payment_method, crud_payout_settings
 
 router = APIRouter(prefix="/commerce", tags=["Payment Methods"])
 
+def extract_list(result):
+    # tuple: (list, count)
+    if isinstance(result, tuple):
+        return result[0]
+
+    # dict pagination shape: {"data": [...], "total_count": N}
+    if isinstance(result, dict) and "data" in result:
+        return result["data"]
+
+    # otherwise return as-is (if it's already a list)
+    return result
 
 @router.get("/payment-methods", response_model=List[PaymentMethodResponse])
 async def get_payment_methods(
@@ -33,7 +44,7 @@ async def get_payment_methods(
     payment_methods = await crud_payment_method.get_user_payment_methods(
         db, current_user.id, include_unverified
     )
-    return payment_methods
+    return extract_list(payment_methods)
 
 
 @router.post("/payment-methods", response_model=PaymentMethodResponse)

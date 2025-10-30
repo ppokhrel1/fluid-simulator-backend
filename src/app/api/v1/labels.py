@@ -13,6 +13,17 @@ from ...schemas.labels import LabelCreate, LabelUpdate, LabelRead, AILabelSugges
 
 router = APIRouter()
 
+def extract_list(result):
+    # tuple: (list, count)
+    if isinstance(result, tuple):
+        return result[0]
+
+    # dict pagination shape: {"data": [...], "total_count": N}
+    if isinstance(result, dict) and "data" in result:
+        return result["data"]
+
+    # otherwise return as-is (if it's already a list)
+    return result
 
 @router.get("/models/{model_id}/labels", response_model=List[LabelRead])
 async def get_model_labels(
@@ -29,7 +40,7 @@ async def get_model_labels(
         )
     
     labels = await label_crud.get_model_labels(db, model_id)
-    return labels
+    return extract_list(labels)
 
 
 @router.post("/models/{model_id}/labels", response_model=LabelRead)
@@ -137,7 +148,7 @@ async def get_labels_by_category(
 ):
     """Get labels by category."""
     labels = await label_crud.get_labels_by_category(db, category)
-    return labels
+    return extract_list(labels)
 
 
 @router.post("/models/{model_id}/ai-suggestions", response_model=List[AILabelSuggestion])
@@ -181,4 +192,4 @@ async def get_ai_label_suggestions(
         )
     ]
     
-    return mock_suggestions
+    return extract_list(mock_suggestions)

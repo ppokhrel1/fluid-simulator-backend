@@ -23,6 +23,18 @@ from datetime import datetime, timedelta
 router = APIRouter(prefix="/purchases", tags=["Purchase Management"])
 
 
+def extract_list(result):
+    # tuple: (list, count)
+    if isinstance(result, tuple):
+        return result[0]
+
+    # dict pagination shape: {"data": [...], "total_count": N}
+    if isinstance(result, dict) and "data" in result:
+        return result["data"]
+
+    # otherwise return as-is (if it's already a list)
+    return result
+    
 @router.get("/{purchase_id}/details", response_model=PurchaseDetailsResponse)
 async def get_purchase_details(
     purchase_id: str,
