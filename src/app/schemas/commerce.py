@@ -2,14 +2,15 @@
 
 from datetime import datetime
 from decimal import Decimal
-from typing import List, Optional
+from typing import List, Optional, Any
 from pydantic import BaseModel, Field
+import uuid
 
 # Add this after your existing schemas, or in a common 'pagination' file
 
 from typing import Generic, TypeVar, List
 from pydantic.generics import GenericModel # Import GenericModel
-
+from pydantic import BaseModel, field_validator
 # Define a TypeVar to hold the schema type (e.g., DesignAssetRead)
 T = TypeVar('T')
 
@@ -62,6 +63,13 @@ class DesignAssetRead(DesignAssetBase):
     
     class Config:
         from_attributes = True
+
+    @field_validator('id', mode='before')
+    @classmethod
+    def convert_uuid_to_str(cls, v: Any):
+        if isinstance(v, uuid.UUID):
+            return str(v)
+        return v
 
 
 

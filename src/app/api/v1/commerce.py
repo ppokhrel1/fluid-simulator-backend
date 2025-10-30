@@ -84,11 +84,11 @@ async def sell_design(
         price=Decimal(form_data.price),  # Convert string to Decimal
         category=form_data.category,
         status="active",  # Set as active since it's being sold
-        seller_id=current_user.id,  # Get from authenticated user
+        seller_id=current_user['id'],  # Get from authenticated user
         original_model_id=None  # Can be enhanced later
     )
     
-    design = await design_asset_crud.create(db, obj_in=design_data.model_dump())
+    design = await design_asset_crud.create(db, object=design_data)
     return design
 
 
