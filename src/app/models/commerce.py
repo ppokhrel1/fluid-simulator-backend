@@ -4,6 +4,7 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Optional
 from uuid import uuid4
+import uuid as uuid_pkg
 
 from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, DECIMAL
 from sqlalchemy.dialects.postgresql import UUID
@@ -24,7 +25,9 @@ class DesignAsset(Base):
     seller_id: Mapped[int] = mapped_column(Integer, ForeignKey("user.id"))
     
     # Fields with defaults come after
-    id: Mapped[str] = mapped_column(UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid4()))
+    # UUID as Primary Key
+    id: Mapped[uuid_pkg.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+
     description: Mapped[Optional[str]] = mapped_column(Text, default=None)
     category: Mapped[Optional[str]] = mapped_column(String(100), default=None)
     status: Mapped[str] = mapped_column(String(50), default="draft")  # active|draft|sold|paused
@@ -50,7 +53,9 @@ class CartItem(Base):
     
     # Fields without defaults come first
     user_id: Mapped[int] = mapped_column(Integer, ForeignKey("user.id"))
-    design_id: Mapped[str] = mapped_column(String, ForeignKey("design_assets.id"))
+    
+    design_id: Mapped[uuid_pkg.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("design_assets.id"))
+    
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     price: Mapped[Decimal] = mapped_column(DECIMAL(10, 2), nullable=False)
     size: Mapped[str] = mapped_column(String(50))
@@ -58,7 +63,8 @@ class CartItem(Base):
     icon: Mapped[str] = mapped_column(String(255))
     
     # Fields with defaults come after
-    id: Mapped[str] = mapped_column(UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid4()))
+    id: Mapped[uuid_pkg.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+
     original_price: Mapped[Optional[Decimal]] = mapped_column(DECIMAL(10, 2), default=None)
     quantity: Mapped[int] = mapped_column(Integer, default=1)
     added_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
@@ -74,7 +80,8 @@ class SalesTransaction(Base):
     __tablename__ = "sales_transactions"
     
     # Fields without defaults come first
-    design_id: Mapped[str] = mapped_column(String, ForeignKey("design_assets.id"))
+    design_id: Mapped[uuid_pkg.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("design_assets.id"))
+    
     design_name: Mapped[str] = mapped_column(String(255), nullable=False)
     buyer_id: Mapped[int] = mapped_column(Integer, ForeignKey("user.id"))
     buyer_email: Mapped[str] = mapped_column(String(255), nullable=False)
@@ -82,7 +89,7 @@ class SalesTransaction(Base):
     seller_earnings: Mapped[Decimal] = mapped_column(DECIMAL(10, 2), nullable=False)
     
     # Fields with defaults come after
-    id: Mapped[str] = mapped_column(UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid4()))
+    id: Mapped[uuid_pkg.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     date: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     status: Mapped[str] = mapped_column(String(50), default="completed")  # completed|pending|refunded
     transaction_id: Mapped[Optional[str]] = mapped_column(String(255), default=None)
@@ -105,7 +112,7 @@ class Payout(Base):
     net_amount: Mapped[Decimal] = mapped_column(DECIMAL(10, 2), nullable=False)
     
     # Fields with defaults come after
-    id: Mapped[str] = mapped_column(UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid4()))
+    id: Mapped[uuid_pkg.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     status: Mapped[str] = mapped_column(String(50), default="pending")  # pending|processing|completed|failed
     request_date: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     processed_date: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), default=None)

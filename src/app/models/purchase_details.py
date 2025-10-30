@@ -5,6 +5,8 @@ from typing import Dict, Any, List, Optional
 from sqlalchemy import Column, String, Integer, DateTime, Text, ForeignKey, JSON
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+import uuid as uuid_pkg
 import uuid
 
 from ..core.db.database import Base
@@ -16,7 +18,11 @@ class PurchaseDetails(Base):
     __tablename__ = "purchase_details"
     
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    transaction_id = Column(String(255), ForeignKey("sales_transactions.id"), nullable=False)
+    transaction_id: Mapped[uuid_pkg.UUID] = mapped_column(
+        UUID(as_uuid=True), 
+        ForeignKey("sales_transactions.id"), 
+        nullable=False
+    )
     item_details = Column(JSON, nullable=False, default=dict)
     download_links = Column(JSON, default=list)
     download_count = Column(Integer, default=0)

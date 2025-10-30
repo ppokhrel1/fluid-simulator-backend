@@ -5,6 +5,8 @@ from sqlalchemy import Column, String, Integer, DateTime, Text, ForeignKey, Bool
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID
 import uuid
+import uuid as uuid_pkg
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from ..core.db.database import Base
 
@@ -14,8 +16,17 @@ class SupportTicket(Base):
     
     __tablename__ = "support_tickets"
     
-    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    transaction_id = Column(String(255), ForeignKey("sales_transactions.id"), nullable=False)
+    id: Mapped[uuid_pkg.UUID] = mapped_column(
+        UUID(as_uuid=True), 
+        primary_key=True, 
+        default=uuid_pkg.uuid4
+    )
+    
+    transaction_id: Mapped[uuid_pkg.UUID] = mapped_column(
+        UUID(as_uuid=True), 
+        ForeignKey("sales_transactions.id"), 
+        nullable=False
+    )
     user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
     issue_type = Column(String(100), nullable=False)
     subject = Column(String(255), nullable=False)
