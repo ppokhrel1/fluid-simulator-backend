@@ -74,6 +74,12 @@ class User(Base):
     is_superuser: Mapped[bool] = mapped_column(default=False)
     is_deleted: Mapped[bool] = mapped_column(default=False, index=True)
 
+    payment_transactions: Mapped[list["PaymentTransaction"]] = relationship(
+        "PaymentTransaction", back_populates="user"
+    )
+    
     @property
     def full_name(self) -> str:
         return self.name
+
+

@@ -14,3 +14,4 @@ from .analytics import *
 from .sales_management import *
 from .payment_methods import *
 from .advanced_tools import *
+from .payment_transaction import *

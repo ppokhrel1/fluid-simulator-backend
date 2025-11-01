@@ -18,6 +18,7 @@ from .purchase_management import router as purchase_management_router
 from .analytics import router as analytics_router
 from .payment_methods import router as payment_methods_router
 from .advanced_tools import router as advanced_tools_router
+from .payments import router as payments_router
 
 router = APIRouter(prefix="/v1")
 router.include_router(login_router)
@@ -31,6 +32,7 @@ router.include_router(stl_file_router)
 router.include_router(commerce_router, prefix="/commerce", tags=["commerce"])
 router.include_router(chatbot_router, prefix="/chat", tags=["chatbot"])
 router.include_router(labels_router, prefix="/labels", tags=["labels"])
+router.include_router(payments_router, tags=["payments"])
 
 # DASHBOARD FUNCTIONALITY ENDPOINTS
 router.include_router(purchase_management_router, prefix="/commerce", tags=["purchase-management"])

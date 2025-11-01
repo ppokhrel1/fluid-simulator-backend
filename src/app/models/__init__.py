@@ -11,3 +11,4 @@ from .support_tickets import SupportTicket
 from .analytics import DesignAnalytics, UserAnalytics
 from .payment_methods import PaymentMethod, PayoutSettings
 from .promotion_campaigns import PromotionCampaign
+from .payment_transactions import PaymentTransaction
