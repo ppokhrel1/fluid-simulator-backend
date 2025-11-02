@@ -13,7 +13,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
     uv sync --locked --no-install-project
 
-# Copy the project source code
+# Copy the project source code (Needed for uv sync --no-editable)
 COPY . /app
 
 # Install the project in non-editable mode
@@ -30,15 +30,20 @@ RUN groupadd --gid 1000 app \
 # Copy the virtual environment from the builder stage
 COPY --from=builder --chown=app:app /app/.venv /app/.venv
 
+# 🛑 FIX 1: Copy the application source code (including the 'src' directory)
+# The source code needs to be present in the final working directory.
+COPY --from=builder --chown=app:app /app /code
+
 # Ensure the virtual environment is in the PATH
 ENV PATH="/app/.venv/bin:$PATH"
 
 # Switch to the non-root user
 USER app
 
-# Set the working directory
+# Set the working directory (where the 'src' module should be found)
 WORKDIR /code
 
-# -------- replace with comment to run with gunicorn --------
-CMD ["uvicorn", "src.app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
-# CMD ["gunicorn", "src.app.main:app", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "-b", "0.0.0.0:8000"]
+# 🛑 FIX 2: Use the robust CMD for Gunicorn deployment
+# Use the commented-out Gunicorn line, ensuring the module path is correct.
+# Note: For production deployment on Render, you should generally NOT use --reload.
+CMD ["gunicorn", "src.app.main:app", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "-b", "0.0.0.0:8000"]
