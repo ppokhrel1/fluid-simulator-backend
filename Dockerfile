@@ -1,60 +1,49 @@
 # --------- Builder Stage ---------
-FROM python:3.11-slim-bookworm AS builder
+FROM ghcr.io/astral-sh/uv:python3.11-bookworm-slim AS builder
 
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=1
+# Set environment variables for uv
+ENV UV_COMPILE_BYTECODE=1
+ENV UV_LINK_MODE=copy
 
 WORKDIR /app
 
-# Install build tools for compiled wheels (only in builder)
-RUN apt-get update \
- && apt-get install -y --no-install-recommends \
-    build-essential \
-    gcc \
-    python3-dev \
-    libssl-dev \
-    libffi-dev \
-    libpq-dev \
-    curl \
- && rm -rf /var/lib/apt/lists/*
+# Install dependencies first (for better layer caching)
+RUN --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=bind,source=uv.lock,target=uv.lock \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    uv sync --locked --no-install-project
 
-# Copy only requirements first to leverage Docker cache
-COPY requirements.txt /app/requirements.txt
-
-# Create virtualenv and install requirements without using pip cache
-RUN python -m venv /opt/venv \
- && /opt/venv/bin/python -m pip install --upgrade pip setuptools wheel \
- && /opt/venv/bin/pip install --no-cache-dir -r /app/requirements.txt
-
-# Copy project files afterwards (so deps layer remains cached)
+# Copy the project source code (Needed for uv sync --no-editable)
 COPY . /app
 
-# If you need to "install" the package locally (optional)
-# RUN /opt/venv/bin/pip install --no-cache-dir .
+# Install the project in non-editable mode
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --locked --no-editable
 
 # --------- Final Stage ---------
 FROM python:3.11-slim-bookworm
 
-# create non-root user
+# Create a non-root user for security
 RUN groupadd --gid 1000 app \
- && useradd --uid 1000 --gid app --shell /bin/bash --create-home app
+    && useradd --uid 1000 --gid app --shell /bin/bash --create-home app
 
-# copy venv from builder stage
-COPY --from=builder --chown=app:app /opt/venv /opt/venv
+# Copy the virtual environment from the builder stage
+COPY --from=builder --chown=app:app /app/.venv /app/.venv
 
-ENV PATH="/opt/venv/bin:$PATH" \
-    PIP_NO_CACHE_DIR=1
+# 🛑 FIX 1: Copy the application source code (including the 'src' directory)
+# The source code needs to be present in the final working directory.
+COPY --from=builder --chown=app:app /app /code
 
+# Ensure the virtual environment is in the PATH
+ENV PATH="/app/.venv/bin:$PATH"
+
+# Switch to the non-root user
 USER app
+
+# Set the working directory (where the 'src' module should be found)
 WORKDIR /code
 
-# expose the Cloud Run default port (optional; for clarity)
-EXPOSE 8080
-
-# Use the PORT env var (fallback 8080) so Cloud Run can route traffic correctly.
-# The 'exec' wrapped in sh -c ensures the uvicorn process receives signals properly.
-CMD ["sh", "-c", "exec uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8080}"]
-# -------- replace with comment to run with gunicorn --------
-CMD ["uvicorn", "src.app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
-# CMD ["gunicorn", "src.app.main:app", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "-b", "0.0.0.0:8000"]
+# 🛑 FIX 2: Use the robust CMD for Gunicorn deployment
+# Use the commented-out Gunicorn line, ensuring the module path is correct.
+# Note: For production deployment on Render, you should generally NOT use --reload.
+CMD ["gunicorn", "src.app.main:app", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "-b", "0.0.0.0:8000"]
