@@ -5,6 +5,13 @@ FROM ghcr.io/astral-sh/uv:python3.11-bookworm-slim AS builder
 ENV UV_COMPILE_BYTECODE=1
 ENV UV_LINK_MODE=copy
 
+# 1. Copy ONLY the requirements file (for best layer caching)
+COPY requirements.txt /app/requirements.txt
+
+# 2. Create the virtual environment and install dependencies
+# Note: uv requires an explicit virtual environment when using 'uv pip install'
+RUN uv venv /app/.venv
+
 # Builder stage working directory
 WORKDIR /app
 
