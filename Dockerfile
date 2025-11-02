@@ -13,25 +13,23 @@ WORKDIR /app
 COPY requirements.txt /app/requirements.txt
 
 # 2. Create the virtual environment
-# We explicitly create the venv first, as uv's 'pip install' command installs into an active or specified environment.
+# We explicitly create the venv first at /app/.venv.
 RUN uv venv /app/.venv
 
 # 3. Install dependencies from requirements.txt
-# We use the 'uv pip install' command inside the venv's bin directory for explicit control.
+# We use the GLOBAL 'uv' executable, which automatically targets the newly created /app/.venv.
+# This fixes the "not found" error you were getting.
 RUN --mount=type=cache,target=/root/.cache/uv \
-    /app/.venv/bin/uv pip install -r requirements.txt
+    uv pip install -r requirements.txt
 
 # 4. Copy the rest of the project source code
 COPY . /app
-
-# The "install project in non-editable mode" step from the original is removed
-# because requirements.txt usually doesn't include the project itself.
-# Your application code is simply copied in the step above.
 
 # --------- Final Stage ---------
 FROM python:3.11-slim-bookworm
 
 # Create a non-root user for security
+# Using fixed GID and UID for consistency
 RUN groupadd --gid 1000 app \
     && useradd --uid 1000 --gid app --shell /bin/bash --create-home app
 
@@ -39,9 +37,10 @@ RUN groupadd --gid 1000 app \
 COPY --from=builder --chown=app:app /app/.venv /app/.venv
 
 # Copy the application source code
+# Note: The source code is copied from /app (builder) to /code (final)
 COPY --from=builder --chown=app:app /app /code
 
-# Ensure the virtual environment is in the PATH
+# Ensure the virtual environment's executables are in the PATH
 ENV PATH="/app/.venv/bin:$PATH"
 
 # Switch to the non-root user and set the working directory
@@ -49,4 +48,6 @@ USER app
 WORKDIR /code
 
 # -------- Entry Point --------
+# This CMD is run from /code, allowing 'src.app.main:app' to be resolved.
+# NOTE: Render requires port 10000 for web services. Change 8000 to 10000 if deploying there.
 CMD ["uvicorn", "src.app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
