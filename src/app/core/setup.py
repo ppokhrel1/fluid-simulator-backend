@@ -27,14 +27,43 @@ from .config import (
     settings,
 )
 from .db.database import Base
-from .db.database import async_engine as engine
+from .db import database
+engine = database.async_engine
 from .utils import cache, queue
 
 
 # -------------- database --------------
 async def create_tables() -> None:
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    global engine
+    try:
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+        print("✅ Database tables created successfully")
+    except Exception as e:
+        print(f"⚠️ Primary database connection failed: {str(e)[:100]}...")
+        print("🔄 Switching to SQLite fallback...")
+        
+        # Set environment variable to force SQLite and reimport database
+        import os
+        os.environ['FORCE_SQLITE'] = 'true'
+        
+        # Reimport the database module to get SQLite engine
+        try:
+            from importlib import reload
+            from ..core.db import database
+            reload(database)
+            
+            # Update the global engine reference
+            engine = database.async_engine
+            
+            # Try creating tables with SQLite
+            async with engine.begin() as conn:
+                await conn.run_sync(Base.metadata.create_all)
+            print("✅ SQLite fallback database tables created successfully")
+            
+        except Exception as sqlite_error:
+            print(f"❌ SQLite fallback also failed: {sqlite_error}")
+            print("⚠️ Continuing without database - some features may not work")
 
 
 # -------------- cache --------------

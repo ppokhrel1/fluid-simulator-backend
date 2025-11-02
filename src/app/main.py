@@ -30,14 +30,19 @@ async def lifespan_with_admin(app: FastAPI) -> AsyncGenerator[None, None]:
 
 app = create_application(router=router, settings=settings, lifespan=lifespan_with_admin)
 
+# Add a basic root endpoint
+@app.get("/")
+async def root():
+    return {"message": "Fluid Simulator Backend is running!", "status": "healthy", "docs": "/docs"}
+
 # Mount admin interface if enabled
 if admin:
     app.mount(settings.CRUD_ADMIN_MOUNT_PATH, admin.app)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Specify allowed origins
+    allow_origins=["*"],  # Allow all origins for development
     allow_credentials=True,
-    allow_methods=["GET", "POST"],           # Specify allowed methods
-    allow_headers=["*"],
+    allow_methods=["*"],  # Allow all HTTP methods (GET, POST, PUT, DELETE, etc.)
+    allow_headers=["*"],  # Allow all headers
 )

@@ -8,14 +8,95 @@ from ...api.dependencies import get_current_superuser, get_current_user
 from ...core.db.database import async_get_db
 from ...core.exceptions.http_exceptions import DuplicateValueException, ForbiddenException, NotFoundException
 from ...core.security import blacklist_token, get_password_hash, oauth2_scheme
+from fastapi.security import OAuth2PasswordRequestForm
+from ...core.security import (
+    create_access_token, 
+    verify_password,     
+    ACCESS_TOKEN_EXPIRE_MINUTES 
+)
 from ...crud.crud_rate_limit import crud_rate_limits
 from ...crud.crud_tier import crud_tiers
 from ...crud.crud_users import crud_users
 from ...schemas.tier import TierRead
-from ...schemas.user import UserCreate, UserCreateInternal, UserRead, UserTierUpdate, UserUpdate
+from ...schemas.user import UserCreate, UserCreateInternal, UserRead, UserTierUpdate, UserUpdate, RegistrationRequest
 
 router = APIRouter(tags=["users"])
 
+
+@router.post("/register", response_model=UserRead, status_code=201)
+async def register_user(
+    request: Request, user: RegistrationRequest, db: Annotated[AsyncSession, Depends(async_get_db)]
+) -> UserRead:
+    """Register a new user with the format expected by the frontend."""
+    email_row = await crud_users.exists(db=db, email=user.email)
+    if email_row:
+        raise DuplicateValueException("Email is already registered")
+
+    username_row = await crud_users.exists(db=db, username=user.username)
+    if username_row:
+        raise DuplicateValueException("Username not available")
+
+    # Convert RegistrationRequest to UserCreateInternal
+    user_internal_dict = {
+        "username": user.username,
+        "email": user.email,
+        "hashed_password": get_password_hash(password=user.password),
+        "name": user.name,  # Map full_name to name for database storage
+    }
+
+    user_internal = UserCreateInternal(**user_internal_dict)
+    created_user = await crud_users.create(db=db, object=user_internal)
+
+    user_read = await crud_users.get(db=db, id=created_user.id, schema_to_select=UserRead)
+    if user_read is None:
+        raise NotFoundException("Created user not found")
+
+    return cast(UserRead, user_read)
+
+
+@router.post("/login")
+async def login_for_access_token(
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+    db: Annotated[AsyncSession, Depends(async_get_db)],
+) -> dict:
+    """
+    Authenticate a user and issue an access token upon successful login.
+    """
+    # 1. Retrieve the user by username (or email, depending on your setup)
+    db_user = await crud_users.get(db=db, username=form_data.email)
+    if not db_user:
+        # Avoid telling the attacker if the user exists
+        raise ForbiddenException(detail="Incorrect username or password") 
+    
+    # 2. Verify the password
+    # NOTE: Your crud_users.get() returns an ORM object or a Pydantic UserRead.
+    # We need the HASHED password, which might not be in UserRead.
+    # You may need a schema_to_select that includes 'hashed_password' for this step.
+    
+    # Temporarily fetch the full ORM object to get the hashed password
+    full_user = await crud_users.get(db=db, email=form_data.email, schema_to_select=None) 
+    
+    if not full_user or not verify_password(form_data.password, full_user.hashed_password):
+        raise ForbiddenException(detail="Incorrect username or password")
+
+    # 3. Create the token payload
+    # The payload should contain data necessary to identify the user later (e.g., username, ID)
+    access_token_data = {
+        "sub": full_user.email,
+        "is_superuser": full_user.is_superuser,
+        "id": full_user.id
+    }
+
+    # 4. Generate the access token
+    access_token = create_access_token(data=access_token_data)
+    
+    # 5. Return the token
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user_id": full_user.id,
+        "email": full_user.email,
+    }
 
 @router.post("/user", response_model=UserRead, status_code=201)
 async def write_user(

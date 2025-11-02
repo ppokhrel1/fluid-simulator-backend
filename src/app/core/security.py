@@ -3,6 +3,7 @@ from enum import Enum
 from typing import Any, Literal, cast
 
 import bcrypt
+from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from pydantic import SecretStr
@@ -11,6 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ..crud.crud_users import crud_users
 from .config import settings
 from .db.crud_token_blacklist import crud_token_blacklist
+from .db.database import async_get_db
 from .schemas import TokenBlacklistCreate, TokenData
 
 SECRET_KEY: SecretStr = settings.SECRET_KEY
@@ -135,3 +137,49 @@ async def blacklist_token(token: str, db: AsyncSession) -> None:
     if exp_timestamp is not None:
         expires_at = datetime.fromtimestamp(exp_timestamp)
         await crud_token_blacklist.create(db, object=TokenBlacklistCreate(token=token, expires_at=expires_at))
+
+
+async def get_current_user(
+    token: str = Depends(oauth2_scheme),
+    db: AsyncSession = Depends(async_get_db)
+) -> dict[str, Any]:
+    """Get current authenticated user from JWT token.
+    
+    Parameters
+    ----------
+    token: str
+        JWT token from Authorization header
+    db: AsyncSession
+        Database session
+        
+    Returns
+    -------
+    dict[str, Any]
+        Current user data
+        
+    Raises
+    ------
+    HTTPException
+        401 if token is invalid or user not found
+    """
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    
+    # Verify the token
+    token_data = await verify_token(token, TokenType.ACCESS, db)
+    if token_data is None:
+        raise credentials_exception
+    
+    # Get user from database
+    if "@" in token_data.username_or_email:
+        user = await crud_users.get(db=db, email=token_data.username_or_email, is_deleted=False)
+    else:
+        user = await crud_users.get(db=db, username=token_data.username_or_email, is_deleted=False)
+    
+    if user is None:
+        raise credentials_exception
+        
+    return cast(dict[str, Any], user)

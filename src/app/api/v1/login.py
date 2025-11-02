@@ -28,6 +28,7 @@ async def login_for_access_token(
     db: Annotated[AsyncSession, Depends(async_get_db)],
 ) -> dict[str, str]:
     user = await authenticate_user(username_or_email=form_data.username, password=form_data.password, db=db)
+    
     if not user:
         raise UnauthorizedException("Wrong username, email or password.")
 

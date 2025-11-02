@@ -1,9 +1,9 @@
 from datetime import datetime
-from typing import Annotated
+from typing import Annotated, ClassVar 
+import json # Used in the validator logic
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
-from fastapi_users_db_sqlalchemy import SQLAlchemyBaseUserTable, SQLAlchemyUserDatabase
-from sqlalchemy import DateTime, ForeignKey, Integer, String
+from pydantic import FieldValidationInfo
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator, ValidationInfo, computed_field
 from ..core.schemas import PersistentDeletion, TimestampSchema, UUIDSchema
 
 from fastapi_users_db_sqlalchemy import SQLAlchemyBaseUserTable, SQLAlchemyUserDatabase
@@ -17,44 +17,51 @@ class UserBase(BaseModel):
     name: Annotated[str, Field(min_length=2, max_length=30, examples=["User Userson"])]
     username: Annotated[str, Field(min_length=2, max_length=20, pattern=r"^[a-z0-9]+$", examples=["userson"])]
     email: Annotated[EmailStr, Field(examples=["user.userson@example.com"])]
+        
+    # Ensure this is set to handle SQLAlchemy properties/attributes
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
+class User(TimestampSchema, UserBase, UUIDSchema, PersistentDeletion):
+    # Note: User inherits full_name and the model_config from UserBase
+    profile_image_url: Annotated[str, Field(default="https://www.profileimageurl.com")]
+    hashed_password: str
+    full_name: str
+    is_superuser: bool = False
+    tier_id: int | None = None
 
-
-class User(SQLAlchemyBaseUserTable[int], Base):
-    __tablename__ = "user"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    
-    name: Mapped[str] = mapped_column(String(30))
-    username: Mapped[str] = mapped_column(String(20), unique=True, index=True)
-    profile_image_url: Mapped[str] = mapped_column(String, default="https://profileimageurl.com")
-    
-    # timestamp fields
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), 
-        default=lambda: datetime.now(timezone.utc)
-    )
-    updated_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), 
-        onupdate=lambda: datetime.now(timezone.utc),
-        nullable=True
-    )
-    tier_id: Mapped[int | None] = mapped_column(ForeignKey("tier.id"), index=True, default=None)
 
 class UserRead(BaseModel):
     id: int
-
-    name: Annotated[str, Field(min_length=2, max_length=30, examples=["User Userson"])]
-    username: Annotated[str, Field(min_length=2, max_length=20, pattern=r"^[a-z0-9]+$", examples=["userson"])]
     email: Annotated[EmailStr, Field(examples=["user.userson@example.com"])]
-    profile_image_url: str
-    tier_id: int | None
-
+    name: Annotated[str, Field(min_length=2, max_length=30, examples=["User Userson"])]
+    is_superuser: bool = False
+    is_active: bool = True
+    profile_image_url: str = "https://www.profileimageurl.com"
+    tier_id: int | None = None
+    
+    # Config is now handled by model_config (Pydantic v2 style)
+    model_config = ConfigDict(from_attributes=True)
 
 class UserCreate(UserBase):
     model_config = ConfigDict(extra="forbid")
 
     password: Annotated[str, Field(pattern=r"^.{8,}|[0-9]+|[A-Z]+|[a-z]+|[^a-zA-Z0-9]+$", examples=["Str1ngst!"])]
+    
+    # NEW: Add a validator to ensure full_name is set equal to 'name' upon creation
+    @field_validator('name', mode='before')
+    @classmethod
+    def sync_full_name_with_name(cls, v: str | None, info: FieldValidationInfo):
+        if 'name' in info.data:
+            return info.data['name']
+        return v # Use provided value or rely on default/database
+
+# NOTE: RegistrationRequest is frontend-compatible, so it must accept full_name as input.
+class RegistrationRequest(BaseModel):
+    """Frontend-compatible registration schema."""
+    username: str
+    email: EmailStr
+    password: str
+    name: str # Frontend sends this, which maps to UserBase.name/full_name
 
 
 class UserCreateInternal(UserBase):
@@ -75,6 +82,8 @@ class UserUpdate(BaseModel):
             pattern=r"^(https?|ftp)://[^\s/$.?#].[^\s]*$", examples=["https://www.profileimageurl.com"], default=None
         ),
     ]
+    # NEW: Allow updating full_name, which will update 'name' in the DB via UserBase logic
+    full_name: Annotated[str | None, Field(min_length=2, max_length=30, examples=["User Userberg"], default=None)]
 
 
 class UserUpdateInternal(UserUpdate):

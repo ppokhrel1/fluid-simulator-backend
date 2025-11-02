@@ -55,3 +55,6 @@ EXPOSE 8080
 # Use the PORT env var (fallback 8080) so Cloud Run can route traffic correctly.
 # The 'exec' wrapped in sh -c ensures the uvicorn process receives signals properly.
 CMD ["sh", "-c", "exec uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8080}"]
+# -------- replace with comment to run with gunicorn --------
+CMD ["uvicorn", "src.app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+# CMD ["gunicorn", "src.app.main:app", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "-b", "0.0.0.0:8000"]

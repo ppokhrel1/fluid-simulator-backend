@@ -34,8 +34,11 @@ class AppSettings(BaseSettings):
     # JWT
     JWT_SECRET: str = "your-jwt-secret-key"
     class Config:
-        env_file = ".env"
+        env_file = ".env"    STRIPE_API_KEY: str = config("STRIPE_API_KEY", default="STRIPE_API_KEY")
+    STRIPE_CLIENT_SECRET: str = config("STRIPE_SECRET_KEY", default="STRIPE_SECRET_KEY")
+    STRIPE_WEBHOOK_SECRET: str = config("STRIPE_WEBHOOK_SECRET", default="STRIPE_WEBHOOK_SECRET")
 
+    
 class CryptSettings(BaseSettings):
     SECRET_KEY: SecretStr = config("SECRET_KEY", cast=SecretStr)
     ALGORITHM: str = config("ALGORITHM", default="HS256")
