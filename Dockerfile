@@ -5,28 +5,28 @@ FROM ghcr.io/astral-sh/uv:python3.11-bookworm-slim AS builder
 ENV UV_COMPILE_BYTECODE=1
 ENV UV_LINK_MODE=copy
 
-# 1. Copy ONLY the requirements file (for best layer caching)
-COPY requirements.txt /app/requirements.txt
-
-# 2. Create the virtual environment and install dependencies
-# Note: uv requires an explicit virtual environment when using 'uv pip install'
-RUN uv venv /app/.venv
-
 # Builder stage working directory
 WORKDIR /app
 
-# Install dependencies first (for better layer caching)
-RUN --mount=type=cache,target=/root/.cache/uv \
-    --mount=type=bind,source=uv.lock,target=uv.lock \
-    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
-    uv sync --locked --no-install-project
+# 1. Copy ONLY the requirements file (for best layer caching)
+# If only code changes, this layer is skipped.
+COPY requirements.txt /app/requirements.txt
 
-# Copy the project source code
+# 2. Create the virtual environment
+# We explicitly create the venv first, as uv's 'pip install' command installs into an active or specified environment.
+RUN uv venv /app/.venv
+
+# 3. Install dependencies from requirements.txt
+# We use the 'uv pip install' command inside the venv's bin directory for explicit control.
+RUN --mount=type=cache,target=/root/.cache/uv \
+    /app/.venv/bin/uv pip install -r requirements.txt
+
+# 4. Copy the rest of the project source code
 COPY . /app
 
-# Install the project in non-editable mode
-RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --locked --no-editable
+# The "install project in non-editable mode" step from the original is removed
+# because requirements.txt usually doesn't include the project itself.
+# Your application code is simply copied in the step above.
 
 # --------- Final Stage ---------
 FROM python:3.11-slim-bookworm
@@ -38,20 +38,15 @@ RUN groupadd --gid 1000 app \
 # Copy the virtual environment from the builder stage
 COPY --from=builder --chown=app:app /app/.venv /app/.venv
 
-# We copy the ENTIRE working directory from the builder (/app) 
-# to the final app directory (/code).
+# Copy the application source code
 COPY --from=builder --chown=app:app /app /code
 
 # Ensure the virtual environment is in the PATH
 ENV PATH="/app/.venv/bin:$PATH"
 
-# Switch to the non-root user
+# Switch to the non-root user and set the working directory
 USER app
-
-# Python must execute commands from the parent directory of 'src'.
 WORKDIR /code
 
 # -------- Entry Point --------
-# This CMD is run from /code, allowing 'src.app.main:app' to be resolved.
 CMD ["uvicorn", "src.app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
-# CMD ["gunicorn", "src.app.main:app", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "-b", "0.0.0.0:8000"]
