@@ -5,6 +5,7 @@ FROM ghcr.io/astral-sh/uv:python3.11-bookworm-slim AS builder
 ENV UV_COMPILE_BYTECODE=1
 ENV UV_LINK_MODE=copy
 
+# Builder stage working directory
 WORKDIR /app
 
 # Install dependencies first (for better layer caching)
@@ -13,7 +14,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
     uv sync --locked --no-install-project
 
-# Copy the project source code (Needed for uv sync --no-editable)
+# Copy the project source code
 COPY . /app
 
 # Install the project in non-editable mode
@@ -30,8 +31,8 @@ RUN groupadd --gid 1000 app \
 # Copy the virtual environment from the builder stage
 COPY --from=builder --chown=app:app /app/.venv /app/.venv
 
-# 🛑 FIX 1: Copy the application source code (including the 'src' directory)
-# The source code needs to be present in the final working directory.
+# We copy the ENTIRE working directory from the builder (/app) 
+# to the final app directory (/code).
 COPY --from=builder --chown=app:app /app /code
 
 # Ensure the virtual environment is in the PATH
@@ -40,10 +41,10 @@ ENV PATH="/app/.venv/bin:$PATH"
 # Switch to the non-root user
 USER app
 
-# Set the working directory (where the 'src' module should be found)
+# Python must execute commands from the parent directory of 'src'.
 WORKDIR /code
 
-# 🛑 FIX 2: Use the robust CMD for Gunicorn deployment
-# Use the commented-out Gunicorn line, ensuring the module path is correct.
-# Note: For production deployment on Render, you should generally NOT use --reload.
-CMD ["gunicorn", "src.app.main:app", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "-b", "0.0.0.0:8000"]
+# -------- Entry Point --------
+# This CMD is run from /code, allowing 'src.app.main:app' to be resolved.
+CMD ["uvicorn", "src.app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+# CMD ["gunicorn", "src.app.main:app", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "-b", "0.0.0.0:8000"]
