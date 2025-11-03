@@ -15,5 +15,7 @@
       "dest": "src/app/main.py"
     }
   ],
-  "installCommand": "pip install -r requirements.txt"
+  "env": {
+    "ENABLE_PIP": "1"
+  }
 }
