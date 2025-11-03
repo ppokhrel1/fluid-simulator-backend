@@ -15,6 +15,7 @@
       "dest": "src/app/main.py"
     }
   ],
+  "installCommand": "pip install -r requirements.txt && export PYTHONPATH=src",
   "env": {
     "ENABLE_PIP": "1",
     "PYTHONPATH": "src"
