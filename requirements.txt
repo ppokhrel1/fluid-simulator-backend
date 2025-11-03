@@ -43,14 +43,9 @@ fastapi-cli==0.0.14
 fastapi-users==15.0.1
 fastapi-users-db-sqlalchemy==7.0.0
 fastcrud==0.17.1
-filelock==3.19.1
-frozenlist==1.8.0
 httpx==0.28.1
 httpx-oauth==0.16.1
 iniconfig==2.1.0
-Jinja2==3.1.6
-libclang==18.1.1
-lockfile==0.12.2
 psycopg2-binary==2.9.11
 pydantic==2.11.9
 PyJWT==2.10.1
