@@ -16,6 +16,8 @@
     }
   ],
   "env": {
-    "ENABLE_PIP": "1"
+    "ENABLE_PIP": "1",
+    "PYTHONPATH": "src"
   }
+  
 }
