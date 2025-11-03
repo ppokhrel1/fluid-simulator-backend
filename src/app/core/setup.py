@@ -40,7 +40,7 @@ async def create_tables() -> None:
             await conn.run_sync(Base.metadata.create_all)
         print("✅ Database tables created successfully")
     except Exception as e:
-        print(f"⚠️ Primary database connection failed: {str(e)[:100]}...")
+        print(f"⚠️ Primary database connection failed: {str(e)}...")
         print("🔄 Switching to SQLite fallback...")
         
         # Set environment variable to force SQLite and reimport database
