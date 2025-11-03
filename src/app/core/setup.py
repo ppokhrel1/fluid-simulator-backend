@@ -45,7 +45,7 @@ async def create_tables() -> None:
         
         # Set environment variable to force SQLite and reimport database
         import os
-        os.environ['FORCE_SQLITE'] = 'true'
+        os.environ['FORCE_SQLITE'] = 'false'
         
         # Reimport the database module to get SQLite engine
         try:
@@ -57,9 +57,9 @@ async def create_tables() -> None:
             engine = database.async_engine
             
             # Try creating tables with SQLite
-            async with engine.begin() as conn:
-                await conn.run_sync(Base.metadata.create_all)
-            print("✅ SQLite fallback database tables created successfully")
+            # async with engine.begin() as conn:
+            #     await conn.run_sync(Base.metadata.create_all)
+            # print("✅ SQLite fallback database tables created successfully")
             
         except Exception as sqlite_error:
             print(f"❌ SQLite fallback also failed: {sqlite_error}")
