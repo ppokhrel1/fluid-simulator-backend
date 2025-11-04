@@ -12,7 +12,7 @@
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "src.app.main"
+      "dest": "src/app/main.py"
     }
   ],
   "installCommand": "pip install -r requirements.txt && export PYTHONPATH=src",
