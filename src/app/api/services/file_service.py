@@ -10,8 +10,8 @@ import hashlib
 import asyncio
 import struct
 
-from ...core.config import AppSettings
-from ...core.logger import *
+from src.app.core.config import AppSettings
+from src.app.core.logger import *
 
 settings = AppSettings()
 

@@ -4,12 +4,12 @@ from typing import Any, List
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ...core.db.database import async_get_db
-from ...core.security import get_current_user
-from ...crud.crud_labels import label_crud
-from ...crud.crud_stl_model import model_crud
-from ...models.user import User
-from ...schemas.labels import LabelCreate, LabelUpdate, LabelRead, AILabelSuggestion
+from src.app.core.db.database import async_get_db
+from src.app.core.security import get_current_user
+from src.app.crud.crud_labels import label_crud
+from src.app.crud.crud_stl_model import model_crud
+from src.app.models.user import User
+from src.app.schemas.labels import LabelCreate, LabelUpdate, LabelRead, AILabelSuggestion
 
 router = APIRouter()
 

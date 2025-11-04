@@ -4,8 +4,8 @@ from typing import Optional
 from redis.asyncio import ConnectionPool, Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ...core.logger import logging
-from ...schemas.rate_limit import sanitize_path
+from src.app.core.logger import logging
+from src.app.schemas.rate_limit import sanitize_path
 
 logger = logging.getLogger(__name__)
 

@@ -5,7 +5,7 @@ from fastapi_users_db_sqlalchemy import SQLAlchemyUserDatabase
 from sqlalchemy.ext.asyncio import AsyncSession
 import uuid
 
-from ..models.user import User, OAuthAccount
+from src.app.models.user import User, OAuthAccount
 from .manager import get_user_manager
 
 # Bearer token transport

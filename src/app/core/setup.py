@@ -50,7 +50,7 @@ async def create_tables() -> None:
         # Reimport the database module to get SQLite engine
         try:
             from importlib import reload
-            from ..core.db import database
+            from src.app.core.db import database
             reload(database)
             
             # Update the global engine reference

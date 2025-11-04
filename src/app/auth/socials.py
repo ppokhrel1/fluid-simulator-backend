@@ -7,9 +7,9 @@ import httpx
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-from ..core.config import settings
-from ..core.db.database import async_get_db
-from ..models.user import User, OAuthAccount
+from src.app.core.config import settings
+from src.app.core.db.database import async_get_db
+from src.app.models.user import User, OAuthAccount
 from .manager import get_user_manager
 
 router = APIRouter(prefix="/auth", tags=["auth"])

@@ -5,10 +5,10 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from decimal import Decimal
 
-from ...core.db.database import async_get_db
-from ...core.security import get_current_user
-from ...models.user import User
-from ...schemas.advanced_tools import (
+from src.app.core.db.database import async_get_db
+from src.app.core.security import get_current_user
+from src.app.models.user import User
+from src.app.schemas.advanced_tools import (
     PricingAnalysisRequest,
     PricingAnalysisResponse,
     MarketAnalysis,
@@ -25,8 +25,8 @@ from ...schemas.advanced_tools import (
     CompetitiveAnalysisResponse,
     CompetitorData
 )
-from ...crud import crud_promotion_campaign
-from ...crud.crud_commerce import design_asset_crud
+from src.app.crud import crud_promotion_campaign
+from src.app.crud.crud_commerce import design_asset_crud
 
 def extract_list(result):
     # tuple: (list, count)

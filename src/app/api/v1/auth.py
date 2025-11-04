@@ -1,7 +1,7 @@
 # app/api/v1/auth.py
 from fastapi import APIRouter
-from ...auth.config import fastapi_users, auth_backend
-from ...auth.socials import router as social_router
+from src.app.auth.config import fastapi_users, auth_backend
+from src.app.auth.socials import router as social_router
 
 router = APIRouter(prefix="", tags=["auth"])
 

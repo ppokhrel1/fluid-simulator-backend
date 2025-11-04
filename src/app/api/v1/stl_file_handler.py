@@ -3,17 +3,17 @@ from fastapi.responses import StreamingResponse
 from typing import List, Optional, Dict, Any
 import io, json
 
-from ...schemas.stl_file_models import (
+from src.app.schemas.stl_file_models import (
     UploadedModelRead, UploadedModelCreate,
     ComponentRead, ComponentCreate,
     AnalysisResultRead, AnalysisResultCreate, ModelsListResponse
 )
 from sqlalchemy.ext.asyncio import AsyncSession
-from ...core.db.database import async_get_db
+from src.app.core.db.database import async_get_db
 
-from ...crud.crud_stl_model import model_crud, component_crud, analysis_crud, storage_crud
-from ...api.dependencies import get_current_user, get_current_superuser
-from ...models import User
+from src.app.crud.crud_stl_model import model_crud, component_crud, analysis_crud, storage_crud
+from src.app.api.dependencies import get_current_user, get_current_superuser
+from src.app.models import User
 
 router = APIRouter()
 

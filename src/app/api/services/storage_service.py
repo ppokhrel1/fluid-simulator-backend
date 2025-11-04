@@ -10,8 +10,8 @@ from fastapi import HTTPException, status, UploadFile
 import asyncio
 
 from supabase import create_client, Client
-from ...core.config import AppSettings
-from ...core.logger import *
+from src.app.core.config import AppSettings
+from src.app.core.logger import *
 
 settings = AppSettings()
 

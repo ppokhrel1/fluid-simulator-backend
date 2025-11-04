@@ -7,8 +7,8 @@ from fastapi_users import BaseUserManager, UUIDIDMixin
 from fastapi_users_db_sqlalchemy import SQLAlchemyUserDatabase
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..core.db.database import async_get_db
-from ..models.user import User, OAuthAccount
+from src.app.core.db.database import async_get_db
+from src.app.models.user import User, OAuthAccount
 
 class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
     reset_password_token_secret = "your-reset-token-secret"

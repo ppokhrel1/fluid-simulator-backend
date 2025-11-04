@@ -6,11 +6,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime, timedelta
 import json
 
-from ...core.db.database import async_get_db
-from ...core.security import get_current_user
-from ...core.config import AppSettings
-from ...models.user import User
-from ...schemas.purchase_management import (
+from src.app.core.db.database import async_get_db
+from src.app.core.security import get_current_user
+from src.app.core.config import AppSettings
+from src.app.models.user import User
+from src.app.schemas.purchase_management import (
     PurchaseDetailsResponse,
     FileDownloadResponse,
     SupportTicketRequest,
@@ -18,10 +18,10 @@ from ...schemas.purchase_management import (
     EnhancedPurchaseResponse,
     PurchaseItem
 )
-from ...crud import crud_purchase_details, crud_support_ticket, crud_payment_transactions
-from ...crud.crud_commerce import sales_transaction_crud
-from ..services import FileService
-from ..services.storage_service import StorageService
+from src.app.crud import crud_purchase_details, crud_support_ticket, crud_payment_transactions
+from src.app.crud.crud_commerce import sales_transaction_crud
+from src.app.api.services import FileService
+from src.app.api.services.storage_service import StorageService
 
 router = APIRouter(prefix="/purchases", tags=["Purchase Management"])
 settings = AppSettings()

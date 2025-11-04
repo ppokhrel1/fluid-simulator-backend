@@ -4,10 +4,10 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ...core.db.database import async_get_db
-from ...core.security import get_current_user
-from ...models.user import User
-from ...schemas.payment_methods import (
+from src.app.core.db.database import async_get_db
+from src.app.core.security import get_current_user
+from src.app.models.user import User
+from src.app.schemas.payment_methods import (
     PaymentMethodCreate,
     PaymentMethodUpdate,
     PaymentMethodResponse,
@@ -18,7 +18,7 @@ from ...schemas.payment_methods import (
     PaymentMethodVerificationRequest,
     PaymentMethodVerificationResponse
 )
-from ...crud import crud_payment_method, crud_payout_settings
+from src.app.crud import crud_payment_method, crud_payout_settings
 
 router = APIRouter(prefix="/commerce", tags=["Payment Methods"])
 

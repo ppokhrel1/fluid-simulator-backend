@@ -3,8 +3,8 @@
 from typing import List, Optional, Dict, Any
 from fastapi import APIRouter, Depends, HTTPException, status, Header, Request, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
-from ...schemas.commerce import SalesTransactionCreate
-from ...schemas.payment_transaction import PaymentTransactionCreate
+from src.app.schemas.commerce import SalesTransactionCreate
+from src.app.schemas.payment_transaction import PaymentTransactionCreate
 from datetime import datetime, timedelta
 import stripe 
 import os
@@ -12,11 +12,11 @@ import json
 from decimal import Decimal
 
 
-from ...core.db.database import async_get_db
-from ...core.security import get_current_user
-from ...core.config import AppSettings
-from ...models.user import User
-from ...schemas.purchase_management import (
+from src.app.core.db.database import async_get_db
+from src.app.core.security import get_current_user
+from src.app.core.config import AppSettings
+from src.app.models.user import User
+from src.app.schemas.purchase_management import (
     PaymentIntentRequest,
     PaymentIntentResponse,
     PaymentConfirmationRequest,
@@ -27,8 +27,8 @@ from ...schemas.purchase_management import (
     SubscriptionPlanResponse,
     StripeWebhookResponse
 )
-from ...crud.crud_payment_transactions import crud_payment_transactions
-from ...crud.crud_commerce import sales_transaction_crud
+from src.app.crud.crud_payment_transactions import crud_payment_transactions
+from src.app.crud.crud_commerce import sales_transaction_crud
 
 
 router = APIRouter(prefix="/payments", tags=["Payment Management"])

@@ -1,6 +1,6 @@
 from arq.connections import RedisSettings
 
-from ...core.config import settings
+from src.app.core.config import settings
 from .functions import sample_background_task, shutdown, startup
 
 REDIS_QUEUE_HOST = settings.REDIS_QUEUE_HOST

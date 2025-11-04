@@ -4,11 +4,11 @@ from typing import Any, List
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ...core.db.database import async_get_db
-from ...core.security import get_current_user
-from ...crud.crud_chatbot import chat_session_crud, chat_history_crud
-from ...models.user import User
-from ...schemas.chatbot import (
+from src.app.core.db.database import async_get_db
+from src.app.core.security import get_current_user
+from src.app.crud.crud_chatbot import chat_session_crud, chat_history_crud
+from src.app.models.user import User
+from src.app.schemas.chatbot import (
     ChatSessionCreate, ChatSessionUpdate, ChatSessionRead,
     ChatHistoryCreate, ChatHistoryRead,
     ChatMessage, ChatResponse
