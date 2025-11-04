@@ -4,7 +4,7 @@ from sqlalchemy.orm import Mapped, relationship
 from sqlalchemy import ForeignKey
 import uuid as uuid_pkg
 
-from ..core.db.database import Base
+from src.app.core.db.database import Base
 
 class OAuthAccount(SQLAlchemyBaseOAuthAccountTable, Base):
     __tablename__ = "oauth_account"

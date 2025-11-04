@@ -9,7 +9,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 import uuid as uuid_pkg
 import uuid
 
-from ..core.db.database import Base
+from src.app.core.db.database import Base
 
 
 class PurchaseDetails(Base):

@@ -7,7 +7,7 @@ from datetime import datetime
 from decimal import Decimal
 import uuid
 
-from ..models.payment_methods import PaymentMethod, PayoutSettings
+from src.app.models.payment_methods import PaymentMethod, PayoutSettings
 
 
 class CRUDPaymentMethod:

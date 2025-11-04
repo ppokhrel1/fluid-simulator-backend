@@ -8,7 +8,7 @@ from decimal import Decimal
 import uuid
 import json
 
-from ..models.promotion_campaigns import PromotionCampaign
+from src.app.models.promotion_campaigns import PromotionCampaign
 
 
 class CRUDPromotionCampaign:

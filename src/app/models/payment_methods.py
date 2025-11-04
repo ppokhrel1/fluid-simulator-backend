@@ -6,7 +6,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID
 import uuid
 
-from ..core.db.database import Base
+from src.app.core.db.database import Base
 
 
 class PaymentMethod(Base):

@@ -10,7 +10,7 @@ from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import declared_attr
 from dataclasses import dataclass, field
 
-from ..core.db.database import Base
+from src.app.core.db.database import Base
 
 from uuid6 import uuid7
 from datetime import UTC, datetime

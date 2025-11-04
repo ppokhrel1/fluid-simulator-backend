@@ -6,8 +6,8 @@ from sqlalchemy import select, update, delete, and_
 from datetime import datetime, timedelta
 import uuid
 
-from ..models.purchase_details import PurchaseDetails
-from ..models.support_tickets import SupportTicket
+from src.app.models.purchase_details import PurchaseDetails
+from src.app.models.support_tickets import SupportTicket
 
 
 class CRUDPurchaseDetails:

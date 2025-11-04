@@ -9,7 +9,7 @@ from jose import JWTError, jwt
 from pydantic import SecretStr
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..crud.crud_users import crud_users
+from src.app.crud.crud_users import crud_users
 from .config import settings
 from .db.crud_token_blacklist import crud_token_blacklist
 from .db.database import async_get_db

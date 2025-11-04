@@ -11,11 +11,11 @@ from fastapi import APIRouter, Depends, FastAPI
 from fastapi.openapi.docs import get_redoc_html, get_swagger_ui_html
 from fastapi.openapi.utils import get_openapi
 
-from ..api.dependencies import get_current_superuser
-from ..core.utils.rate_limit import rate_limiter
-from ..middleware.client_cache_middleware import ClientCacheMiddleware
-from ..models import *  # noqa: F403
-from .config import (
+from src.app.api.dependencies import get_current_superuser
+from src.app.core.utils.rate_limit import rate_limiter
+from src.app.middleware.client_cache_middleware import ClientCacheMiddleware
+from src.app.models import *  # noqa: F403
+from src.app.core.config import (
     AppSettings,
     ClientSideCacheSettings,
     DatabaseSettings,

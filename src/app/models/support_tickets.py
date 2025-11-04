@@ -8,7 +8,7 @@ import uuid
 import uuid as uuid_pkg
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from ..core.db.database import Base
+from src.app.core.db.database import Base
 
 
 class SupportTicket(Base):

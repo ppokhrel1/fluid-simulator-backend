@@ -6,8 +6,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc
 from sqlalchemy.orm import selectinload
 
-from ..models.chatbot import ChatSession, ChatHistory
-from ..schemas.chatbot import (
+from src.app.models.chatbot import ChatSession, ChatHistory
+from src.app.schemas.chatbot import (
     ChatSessionCreate, ChatSessionUpdate, ChatSessionUpdateInternal, ChatSessionDelete, ChatSessionRead,
     ChatHistoryCreate, ChatHistoryUpdate, ChatHistoryUpdateInternal, ChatHistoryDelete, ChatHistoryRead
 )

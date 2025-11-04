@@ -6,8 +6,8 @@ from sqlalchemy import and_, or_, desc
 from datetime import datetime, timedelta
 import uuid
 
-from ..models import PaymentTransaction
-from ..schemas import PaymentTransactionCreate, PaymentTransactionUpdate
+from src.app.models import PaymentTransaction
+from src.app.schemas import PaymentTransactionCreate, PaymentTransactionUpdate
 
 
 class CRUDPaymentTransactions:

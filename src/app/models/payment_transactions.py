@@ -4,7 +4,7 @@ from datetime import datetime
 import uuid
 from sqlalchemy import Column, String, DateTime, Numeric, Integer, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from ..core.db.database import Base   # <- use the same Base as other models
+from src.app.core.db.database import Base   # <- use the same Base as other models
 
 class PaymentTransaction(Base):
     __tablename__ = "payment_transactions"

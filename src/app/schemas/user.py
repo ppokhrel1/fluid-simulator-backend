@@ -4,7 +4,7 @@ import json # Used in the validator logic
 
 from pydantic import FieldValidationInfo
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator, ValidationInfo, computed_field
-from ..core.schemas import PersistentDeletion, TimestampSchema, UUIDSchema
+from src.app.core.schemas import PersistentDeletion, TimestampSchema, UUIDSchema
 
 from fastapi_users_db_sqlalchemy import SQLAlchemyBaseUserTable, SQLAlchemyUserDatabase
 from sqlalchemy.orm import Mapped, mapped_column, DeclarativeBase

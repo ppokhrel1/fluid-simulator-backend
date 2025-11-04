@@ -5,8 +5,8 @@ from fastcrud import FastCRUD
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-from ..models.labels import AssetLabel
-from ..schemas.labels import LabelCreate, LabelUpdate, LabelUpdateInternal, LabelDelete, LabelRead
+from src.app.models.labels import AssetLabel
+from src.app.schemas.labels import LabelCreate, LabelUpdate, LabelUpdateInternal, LabelDelete, LabelRead
 
 
 CRUDLabel = FastCRUD[AssetLabel, LabelCreate, LabelUpdate, LabelUpdateInternal, LabelDelete, LabelRead]

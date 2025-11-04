@@ -6,7 +6,7 @@ from sqlalchemy import select, update, delete, and_, or_, func
 from datetime import datetime, date, timedelta
 from decimal import Decimal
 
-from ..models.analytics import DesignAnalytics, UserAnalytics
+from src.app.models.analytics import DesignAnalytics, UserAnalytics
 
 
 class CRUDDesignAnalytics:

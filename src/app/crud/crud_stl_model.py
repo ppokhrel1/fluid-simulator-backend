@@ -1,6 +1,6 @@
 from fastcrud import FastCRUD
-from ..models.stl_models import UploadedModel, Component, AnalysisResult
-from ..schemas.stl_file_models import (
+from src.app.models.stl_models import UploadedModel, Component, AnalysisResult
+from src.app.schemas.stl_file_models import (
     UploadedModelCreate, UploadedModelUpdate, UploadedModelDelete, UploadedModelRead,
     ComponentCreate, ComponentUpdate, ComponentDelete, ComponentRead,
     AnalysisResultCreate, AnalysisResultUpdate, AnalysisResultDelete, AnalysisResultRead
@@ -39,7 +39,7 @@ CRUDAnalysis = FastCRUD[
     AnalysisResultRead
 ]
 analysis_crud = CRUDAnalysis(AnalysisResult)
-from ..core.config import settings
+from src.app.core.config import settings
 
 # -------------------- Storage CRUD (placeholder) --------------------
 # You can implement your own storage interface (S3, local, etc.)

@@ -9,7 +9,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import ForeignKey, String, Text # Import String and Text if needed in this file
 from decimal import Decimal
-from ..core.db.database import Base
+from src.app.core.db.database import Base
 
 
 class DesignAnalytics(Base):
