@@ -40,6 +40,7 @@ class AppSettings(BaseSettings):
     STRIPE_WEBHOOK_SECRET: str = config("STRIPE_WEBHOOK_SECRET", default="STRIPE_WEBHOOK_SECRET")
 
     REPLICATE_API_TOKEN: str = config("REPLICATE_API_TOKEN", default="")
+    USE_FREE_TIER: str = config("USE_FREE_TIER", default="true")
     
 class CryptSettings(BaseSettings):
     SECRET_KEY: SecretStr = config("SECRET_KEY", cast=SecretStr)

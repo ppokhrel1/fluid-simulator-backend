@@ -10,31 +10,32 @@ class CompositionEngine:
     def __init__(self):
         self.supported_primitives = ['cube', 'sphere', 'cylinder', 'cone', 'torus']
     
+    # In composition_engine.py
     def create_primitive(self, shape_type: str, parameters: Dict) -> trimesh.Trimesh:
-        """Create a primitive shape"""
+        """Create a primitive shape with scene-appropriate defaults"""
         try:
             if shape_type == 'cube':
-                size = parameters.get('size', 1.0)
+                size = parameters.get('size', 4.0)  # Default to 4.0 to match scene scale
                 mesh = trimesh.creation.box([size, size, size])
                 
             elif shape_type == 'sphere':
-                radius = parameters.get('radius', 0.5)
+                radius = parameters.get('radius', 2.0)  # Default to 2.0 to match scene scale
                 subdivisions = parameters.get('subdivisions', 2)
                 mesh = trimesh.creation.icosphere(radius=radius, subdivisions=subdivisions)
                 
             elif shape_type == 'cylinder':
-                radius = parameters.get('radius', 0.5)
-                height = parameters.get('height', 1.0)
+                radius = parameters.get('radius', 1.0)
+                height = parameters.get('height', 4.0)
                 mesh = trimesh.creation.cylinder(radius=radius, height=height)
                 
             elif shape_type == 'cone':
-                radius = parameters.get('radius', 0.5)
-                height = parameters.get('height', 1.0)
+                radius = parameters.get('radius', 1.5)
+                height = parameters.get('height', 4.0)
                 mesh = trimesh.creation.cone(radius=radius, height=height)
                 
             elif shape_type == 'torus':
-                major_radius = parameters.get('major_radius', 1.0)
-                minor_radius = parameters.get('minor_radius', 0.3)
+                major_radius = parameters.get('major_radius', 3.0)
+                minor_radius = parameters.get('minor_radius', 0.8)
                 mesh = trimesh.creation.torus(major_radius=major_radius, minor_radius=minor_radius)
                 
             else:
