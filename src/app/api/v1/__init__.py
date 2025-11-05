@@ -20,6 +20,8 @@ from .payment_methods import router as payment_methods_router
 from .advanced_tools import router as advanced_tools_router
 from .payments import router as payments_router
 
+from .threed_files.threed_files_handler import router as developer_router
+
 router = APIRouter(prefix="/v1")
 router.include_router(login_router)
 router.include_router(logout_router)
@@ -39,3 +41,4 @@ router.include_router(purchase_management_router, prefix="/commerce", tags=["pur
 router.include_router(analytics_router, tags=["analytics"])
 router.include_router(payment_methods_router, tags=["payment-methods"])
 router.include_router(advanced_tools_router, tags=["advanced-tools"])
+router.include_router(developer_router, tags=["developer"])
