@@ -1,0 +1,12 @@
+hiredis-3.2.1.dist-info/INSTALLER,sha256=5hhM4Q4mYTT9z6QB6PGpUAW81PGNFrYrdXMj4oM_6ak,2
+hiredis-3.2.1.dist-info/METADATA,sha256=pdEBkV8y_F2AAg9IirrStJyLaZE01PBri3jrJFFB-9o,7484
+hiredis-3.2.1.dist-info/RECORD,,
+hiredis-3.2.1.dist-info/REQUESTED,sha256=47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU,0
+hiredis-3.2.1.dist-info/WHEEL,sha256=yuaCVO6o9G77XqLSpGPKYfYC2YDPyDYnw7ENbR0zmiw,109
+hiredis-3.2.1.dist-info/licenses/LICENSE,sha256=Mla1t36YqjT_MaTSwsEPfxd7DzBYdTpgREMKFomHNTs,1095
+hiredis-3.2.1.dist-info/top_level.txt,sha256=P_zCKMUoKFNyPXKK3aYI6FeuETe2dcDLC1zsr3scogI,8
+hiredis/__init__.py,sha256=HFTNIMePKpwvWwhk_w9_BXMAHEghxzg_J5CAn4qvjGk,283
+hiredis/hiredis.cpython-313-darwin.so,sha256=ILn5Tgt_pWE1KHiNZKOq-UkW3tdfP3AankMu6eFodk8,127920
+hiredis/hiredis.pyi,sha256=BjtMDVUgqRrhs-WXWxh05M3BPIGFhspHVT-Cb3V9J7A,1036
+hiredis/py.typed,sha256=47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU,0
+hiredis/version.py,sha256=3BjxgoOdY8_gLUzv4upJn3tTpb8jX8wWqkC8k9jDva0,22

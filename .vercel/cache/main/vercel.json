@@ -1,0 +1,24 @@
+{
+  "builds": [
+    {
+      "src": "src/app/main.py",
+      "use": "@vercel/python",
+      "config": {
+        "maxLambdaSize": "15mb",
+        "runtime": "python3.12"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "src/app/main.py"
+    }
+  ],
+  "installCommand": "pip install -r requirements.txt && export PYTHONPATH=src",
+  "env": {
+    "ENABLE_PIP": "1",
+    "PYTHONPATH": "src"
+  }
+  
+}

@@ -1,0 +1,345 @@
+Metadata-Version: 2.4
+Name: crudadmin
+Version: 0.4.2
+Summary: FastAPI-based admin interface with authentication, event logging and CRUD operations
+Project-URL: Homepage, https://github.com/benavlabs/crudadmin
+Project-URL: Documentation, https://benavlabs.github.io/crudadmin
+Project-URL: Repository, https://github.com/benavlabs/crudadmin
+Project-URL: Issues, https://github.com/benavlabs/crudadmin/issues
+Project-URL: Changelog, https://github.com/benavlabs/crudadmin/releases
+Author-email: Igor Benav <igor.magalhaes.r@gmail.com>
+License-File: LICENSE
+Classifier: Development Status :: 3 - Alpha
+Classifier: Environment :: Web Environment
+Classifier: Framework :: FastAPI
+Classifier: Framework :: Pydantic
+Classifier: Framework :: Pydantic :: 2
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Topic :: Internet :: WWW/HTTP
+Classifier: Topic :: Internet :: WWW/HTTP :: HTTP Servers
+Classifier: Topic :: Software Development :: Libraries :: Application Frameworks
+Classifier: Typing :: Typed
+Requires-Python: >=3.9.2
+Requires-Dist: aiosqlite>=0.20.0
+Requires-Dist: bcrypt>=4.2.1
+Requires-Dist: fastapi>=0.115.6
+Requires-Dist: fastcrud>=0.15.12
+Requires-Dist: greenlet>=3.1.1
+Requires-Dist: jinja2>=3.1.5
+Requires-Dist: pydantic-settings>=2.6.1
+Requires-Dist: pydantic[email]>=2.10.4
+Requires-Dist: python-jose>=3.3.0
+Requires-Dist: python-multipart>=0.0.20
+Requires-Dist: sqlalchemy>=2.0.36
+Requires-Dist: user-agents>=2.2.0
+Provides-Extra: all
+Requires-Dist: httptools>=0.6.4; extra == 'all'
+Requires-Dist: httpx>=0.28.1; extra == 'all'
+Requires-Dist: mkdocs-material>=9.6.1; extra == 'all'
+Requires-Dist: mkdocs-meta-descriptions-plugin>=4.0.0; extra == 'all'
+Requires-Dist: mkdocs>=1.6.1; extra == 'all'
+Requires-Dist: mkdocstrings[python]>=0.27.0; extra == 'all'
+Requires-Dist: mypy>=1.9.0; extra == 'all'
+Requires-Dist: pytest-asyncio>=0.25.3; extra == 'all'
+Requires-Dist: pytest>=8.3.4; extra == 'all'
+Requires-Dist: ruff>=0.9.3; extra == 'all'
+Requires-Dist: sqlalchemy-utils>=0.41.2; extra == 'all'
+Requires-Dist: sqlalchemy[mypy]>=2.0.36; extra == 'all'
+Requires-Dist: testcontainers[postgresql]>=4.9.1; extra == 'all'
+Requires-Dist: uvicorn[standard]>=0.12.0; extra == 'all'
+Provides-Extra: dev
+Requires-Dist: httptools>=0.6.4; extra == 'dev'
+Requires-Dist: httpx>=0.28.1; extra == 'dev'
+Requires-Dist: mypy>=1.9.0; extra == 'dev'
+Requires-Dist: pytest-asyncio>=0.25.3; extra == 'dev'
+Requires-Dist: pytest>=8.3.4; extra == 'dev'
+Requires-Dist: ruff>=0.9.3; extra == 'dev'
+Requires-Dist: sqlalchemy-utils>=0.41.2; extra == 'dev'
+Requires-Dist: sqlalchemy[mypy]>=2.0.36; extra == 'dev'
+Requires-Dist: testcontainers[postgresql]>=4.9.1; extra == 'dev'
+Provides-Extra: docs
+Requires-Dist: mkdocs-material>=9.6.1; extra == 'docs'
+Requires-Dist: mkdocs-meta-descriptions-plugin>=4.0.0; extra == 'docs'
+Requires-Dist: mkdocs>=1.6.1; extra == 'docs'
+Requires-Dist: mkdocstrings[python]>=0.27.0; extra == 'docs'
+Provides-Extra: memcached
+Requires-Dist: aiomcache>=0.8.2; extra == 'memcached'
+Provides-Extra: mysql
+Requires-Dist: aiomysql>=0.2.0; extra == 'mysql'
+Provides-Extra: postgres
+Requires-Dist: asyncpg>=0.29.0; extra == 'postgres'
+Provides-Extra: redis
+Requires-Dist: redis>=6.2.0; extra == 'redis'
+Provides-Extra: standard
+Requires-Dist: uvicorn[standard]>=0.12.0; extra == 'standard'
+Provides-Extra: test
+Requires-Dist: aiomcache>=0.8.2; extra == 'test'
+Requires-Dist: redis>=6.2.0; extra == 'test'
+Description-Content-Type: text/markdown
+
+# CRUDAdmin
+
+<p align="center">
+  <a href="https://benavlabs.github.io/crudadmin/">
+    <img src="docs/assets/CRUDAdmin.png" alt="CRUDAdmin logo" width="45%" height="auto">
+  </a>
+</p>
+
+<p align="center">
+  <i>Modern admin interface for FastAPI with built-in authentication, event tracking, and security features</i>
+</p>
+
+<p align="center">
+<a href="https://github.com/benavlabs/crudadmin/actions/workflows/tests.yml">
+  <img src="https://github.com/benavlabs/crudadmin/actions/workflows/tests.yml/badge.svg" alt="Tests"/>
+</a>
+<a href="https://pypi.org/project/crudadmin/">
+  <img src="https://img.shields.io/pypi/v/crudadmin?color=%2334D058&label=pypi%20package" alt="PyPi Version"/>
+</a>
+<a href="https://pypi.org/project/crudadmin/">
+  <img src="https://img.shields.io/pypi/pyversions/crudadmin.svg?color=%2334D058" alt="Supported Python Versions"/>
+</a>
+</p>
+
+---
+
+**CRUDAdmin** is a robust admin interface generator for **FastAPI** applications, offering secure authentication, comprehensive event tracking, and essential monitoring features. Built with [FastCRUD](https://github.com/benavlabs/fastcrud) and HTMX, it helps you create production-ready admin panels with minimal configuration.
+
+**Documentation**: [https://benavlabs.github.io/crudadmin/](https://benavlabs.github.io/crudadmin/)
+
+> \[!IMPORTANT\]  
+> **v0.4.0 Breaking Changes**: Session backend configuration has been completely redesigned. The old method-based API (`admin.use_redis_sessions()`, etc.) has been removed in favor of a cleaner constructor-based approach. **Existing code will need updates.** See the [v0.4.0 release notes](https://github.com/benavlabs/crudadmin/releases) for migration guide and examples.
+
+> \[!WARNING\]  
+> CRUDAdmin is still experimental. While actively developed and tested, APIs may change between versions. Upgrade with caution in production environments, always carefully reading the changelog.
+
+## Features
+
+- **🔒 Multi-Backend Session Management**: Memory, Redis, Memcached, Database, and Hybrid backends
+- **🛡️ Built-in Security**: CSRF protection, rate limiting, IP restrictions, HTTPS enforcement, and secure cookies
+- **📝 Event Tracking & Audit Logs**: Comprehensive audit trails for all admin actions with user attribution
+- **📊 Auto-generated Interface**: Creates admin UI directly from your SQLAlchemy models with intelligent field detection
+- **🔍 Advanced Filtering**: Type-aware field filtering, search, and pagination with bulk operations
+- **🌗 Modern UI**: Clean, responsive interface built with HTMX and [FastCRUD](https://github.com/benavlabs/fastcrud)
+
+## Video Preview
+
+<p align="center">To see what CRUDAdmin dashboard actually looks like in practice, watch the video demo on youtube:</p>
+<p align="center">
+  <a href="https://www.youtube.com/watch?v=THLdUbDQ9yM">
+    <img src="docs/assets/youtube-preview.png" alt="Watch CRUDAdmin Dashboard Demo on Youtube" width="75%" height="auto"/>
+  </a>
+</p>
+<br>
+
+## Quick Start
+
+### Installation
+
+```sh
+uv add crudadmin
+```
+
+For production with Redis sessions:
+```sh
+uv add "crudadmin[redis]"
+```
+
+Or using pip and memcached:
+```sh
+pip install "crudadmin[memcached]"
+```
+
+### Basic Setup
+
+```python
+from contextlib import asynccontextmanager
+from fastapi import FastAPI
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from crudadmin import CRUDAdmin
+
+from .user import (
+    User,
+    UserCreate,
+    UserUpdate,
+)
+
+# Database setup
+engine = create_async_engine("sqlite+aiosqlite:///app.db")
+
+# Create database session dependency
+async def get_session():
+    async with AsyncSession(engine) as session:
+        yield session
+
+# Create admin interface
+admin = CRUDAdmin(
+    session=get_session,
+    SECRET_KEY="your-secret-key-here",
+    initial_admin={
+        "username": "admin",
+        "password": "secure_password123"
+    }
+)
+
+# Add models to admin
+admin.add_view(
+    model=User,
+    create_schema=UserCreate,
+    update_schema=UserUpdate,
+    allowed_actions={"view", "create", "update"}
+)
+
+# Setup FastAPI with proper initialization
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Initialize database tables
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    
+    # Initialize admin interface
+    await admin.initialize()
+    yield
+
+# Create and mount the app
+app = FastAPI(lifespan=lifespan)
+app.mount("/admin", admin.app)
+```
+
+Navigate to `/admin` to access your admin interface with:
+
+- User authentication
+- CRUD operations for your models
+- Responsive UI with dark/light themes
+- Built-in security features
+
+> \[!WARNING\]
+> **Important for SQLite users:** If you're using SQLite databases (which is the default for CRUDAdmin), make sure to add database files to your `.gitignore` to avoid committing sensitive data like admin credentials and session tokens.
+>
+> ```gitignore
+> # SQLite databases - NEVER commit these to version control
+> *.db
+> *.sqlite
+> *.sqlite3
+> crudadmin_data/
+>
+> # Also exclude database journals
+> *.db-journal
+> *.sqlite3-journal
+> ```
+
+## Session Backends
+
+### Development (Default)
+```python
+admin = CRUDAdmin(session=get_session, SECRET_KEY="key")  # Memory backend (default)
+```
+
+### Production with Redis
+```python
+from crudadmin import CRUDAdmin, RedisConfig
+
+# Using configuration object (recommended)
+redis_config = RedisConfig(host="localhost", port=6379, db=0)
+admin = CRUDAdmin(
+    session=get_session, 
+    SECRET_KEY="key",
+    session_backend="redis",
+    redis_config=redis_config
+)
+
+# Or using a dictionary
+admin = CRUDAdmin(
+    session=get_session, 
+    SECRET_KEY="key",
+    session_backend="redis",
+    redis_config={"host": "localhost", "port": 6379, "db": 0}
+)
+
+# Or using Redis URL
+redis_config = RedisConfig(url="redis://localhost:6379/0")
+admin = CRUDAdmin(
+    session=get_session, 
+    SECRET_KEY="key",
+    session_backend="redis",
+    redis_config=redis_config
+)
+```
+
+### Production with Security Features
+```python
+from crudadmin import CRUDAdmin, RedisConfig
+
+# Configure Redis backend
+redis_config = RedisConfig(
+    host="localhost",
+    port=6379,
+    db=0,
+    password="your-redis-password"
+)
+
+admin = CRUDAdmin(
+    session=get_session,
+    SECRET_KEY=SECRET_KEY,
+    # Session backend configuration
+    session_backend="redis",
+    redis_config=redis_config,
+    # Session management settings
+    max_sessions_per_user=3,
+    session_timeout_minutes=15,
+    cleanup_interval_minutes=5,
+    # Security features
+    allowed_ips=["10.0.0.1"],
+    allowed_networks=["192.168.1.0/24"],
+    secure_cookies=True,
+    enforce_https=True,
+    # Event tracking
+    track_events=True
+)
+```
+
+## Backend Options
+
+| Backend | Use Case | Performance | Persistence | Scalability |
+|---------|----------|-------------|-------------|-------------|
+| **Memory** | Development/Testing | Fastest | No | Single Instance |
+| **Redis** | Production (Recommended) | Very Fast | Optional | High |
+| **Memcached** | High-Traffic Production | Very Fast | No | High |
+| **Database** | Simple Deployments | Good | Yes | Medium |
+| **Hybrid** | Enterprise/Audit Requirements | Fast | Yes | High |
+
+## What You Get
+
+- **Secure Authentication** - Login/logout with session management  
+- **Auto-Generated Forms** - Create and edit forms built from your Pydantic schemas  
+- **Data Tables** - Paginated, sortable tables for viewing your data  
+- **CRUD Operations** - Full Create, Read, Update, Delete functionality  
+- **Responsive UI** - Works on desktop and mobile devices  
+- **Dark/Light Themes** - Toggle between themes  
+- **Input Validation** - Built-in validation using your Pydantic schemas  
+- **Event Tracking** - Monitor all admin actions with audit trails  
+- **Health Monitoring** - Real-time system status and diagnostics  
+
+## Documentation
+
+- **[Quick Start](https://benavlabs.github.io/crudadmin/quick-start/)**: Get up and running in 5 minutes
+- **[Usage Guide](https://benavlabs.github.io/crudadmin/usage/overview/)**: Complete usage documentation
+- **[API Reference](https://benavlabs.github.io/crudadmin/api/overview/)**: Full API documentation
+- **[Advanced Topics](https://benavlabs.github.io/crudadmin/advanced/overview/)**: Production features and configurations
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+<hr>
+<a href="https://benav.io">
+  <img src="docs/assets/benav_labs_banner.png" alt="Powered by Benav Labs - benav.io"/>
+</a>
