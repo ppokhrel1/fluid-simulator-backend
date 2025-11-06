@@ -71,3 +71,4 @@ arq
 trimesh
 numpy 
 scipy
+replicate
