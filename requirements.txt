@@ -68,3 +68,6 @@ uvicorn==0.38.0
 fastapi_users_db_sqlalchemy==7.0.0
 stripe
 arq
+trimesh
+numpy 
+scipy

@@ -40,3 +40,18 @@ class ExportResponse(BaseModel):
     mesh_id: str
     format: str
     user_id: str
+
+class MeshRemediationRequest(BaseModel):
+    mesh_id: str
+    operation: str  # 'decimate', 'smooth', 'remesh'
+    parameters: Dict = {}
+
+class MeshRemediationResponse(BaseModel):
+    mesh_id: str
+    vertices: List[List[float]]
+    faces: List[List[int]]
+    operation: str
+    original_vertex_count: int
+    new_vertex_count: int
+    original_face_count: int
+    new_face_count: int

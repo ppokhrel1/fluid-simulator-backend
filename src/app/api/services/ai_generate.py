@@ -25,7 +25,7 @@ class AIGenerationService:
         """Generate 3D shape from text prompt"""
         print(f"🎯 AI Generation Request: '{prompt}'")
         print(f"🔍 Base mesh data: {base_mesh_data}")
-        
+        print(self.use_free_tier, self.replicate_client)
         try:
             if self.use_free_tier or not self.replicate_client:
                 result = await self._generate_with_enhanced_keywords(prompt, base_mesh_data)
