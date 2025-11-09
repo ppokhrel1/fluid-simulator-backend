@@ -72,3 +72,4 @@ trimesh
 numpy 
 scipy
 replicate
+torch
