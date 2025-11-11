@@ -228,7 +228,7 @@ class PINNFlowSolver:
         predictions = torch.cat(all_predictions, dim=0)
         velocity_field = predictions[:, :3].numpy()
         pressure_field = predictions[:, 3].numpy()
-        
+        print(predictions.shape)
         # Reshape to grid
         grid_shape = domain["grid_shape"]
         velocity_field = velocity_field.reshape(grid_shape[0], grid_shape[1], grid_shape[2], 3)
@@ -352,7 +352,6 @@ class PINNFlowSolver:
             streamline = self._trace_streamline_pinn(seed, velocity_field, domain, sdf, max_steps=80)
             if len(streamline) > 3:
                 streamlines.append(streamline)
-        print("streamlines: ", streamlines)
         return streamlines
     
     def _trace_streamline_pinn(self, start_point: List[float], velocity_field: np.ndarray,

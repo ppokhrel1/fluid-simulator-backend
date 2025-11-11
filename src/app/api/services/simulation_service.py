@@ -14,6 +14,7 @@ import torch
 import numpy as np
 import trimesh
 from .pinn.pinn_model import FluidFlowPINN, PINNFlowSolver
+import pyfqmr
 
 logger = logging.getLogger(__name__)
 
@@ -163,7 +164,7 @@ class SimulationService:
                 "viscosity": physics_config.get("viscosity", 0.01)
             }
             
-            resolution = physics_config.get("resolution", 50)
+            resolution = physics_config.get("resolution", 4)
             
             # Prepare geometry data for PINN
             pinn_geometry = {
@@ -174,6 +175,7 @@ class SimulationService:
             
             # Run PINN prediction
             logger.info("Starting PINN flow prediction...")
+            #logger.info("pinn_geometry", pinn_geometry, flow_conditions, resolution)
             flow_data = self.pinn_solver.predict_flow_field(
                 pinn_geometry, flow_conditions, resolution
             )
@@ -301,6 +303,67 @@ class SimulationService:
             logger.error(f"Local simulation failed: {str(e)}")
             raise Exception(f"Local computation error: {str(e)}")
 
+
+    async def process_geometry_file(self, file, max_faces=10) -> Dict[str, List[Any]]:
+        """
+        Reads an uploaded mesh file (STL, OBJ, etc.) and extracts
+        vertices, faces, bounds, and centroid using trimesh.
+        """
+        file_extension = file.filename.split('.')[-1].lower()
+        content = await file.read()
+        
+        try:
+            # Load mesh from bytes using trimesh
+            loaded_data = trimesh.load(file_obj=trimesh.util.wrap_as_stream(content), 
+                                       file_type=file_extension,
+                                       process=True) # Ensure initial processing is done
+            
+            mesh = None # Initialize mesh as None
+            
+            if isinstance(loaded_data, trimesh.Scene):
+                # If it's a Scene, combine all geometry into a single Trimesh object
+                # This ensures we get a single geometry for simulation.
+                # Use geometry.dump() which is alias for Scene.dump()
+                mesh = loaded_data.dump(concatenate=True)
+
+            elif isinstance(loaded_data, trimesh.Trimesh):
+                mesh = loaded_data
+                
+            # --- CRITICAL CHECK POINT ---
+            # 1. Check if loading/combining resulted in a valid Trimesh object
+            if not isinstance(mesh, trimesh.Trimesh):
+                raise ValueError("The file did not contain valid 3D geometry.")
+
+            # --- MESH SIMPLIFICATION STEP (Decimation) ---
+            initial_faces = len(mesh.faces)
+            
+            if max_faces is not None and max_faces < initial_faces:
+                logger.info(f"Simplifying mesh from {initial_faces} faces to a target of {max_faces}.")
+                
+                mesh_simplifier = pyfqmr.Simplify()
+                mesh_simplifier.setMesh(mesh.vertices, mesh.faces)
+                mesh_simplifier.simplify_mesh(target_count = 1000, aggressiveness=15, preserve_border=False, verbose=True)
+                vertices, faces, normals = mesh_simplifier.getMesh()
+                mesh = trimesh.Trimesh(vertices=vertices, faces=faces)
+                logger.info(f"Mesh simplified to {len(mesh.faces)} faces.")
+            # Convert NumPy arrays to standard Python lists and floats
+            return {
+                # Use .tolist() on the NumPy arrays created by trimesh. 
+                # .astype(float) ensures conversion from np.float32 to standard np.float before list conversion
+                "vertices": mesh.vertices.flatten().astype(float).tolist(),
+                "faces": mesh.faces.flatten().astype(int).tolist(),
+                # Note: normals might be empty if the mesh is degenerate/corrupted.
+                "normals": mesh.vertex_normals.flatten().astype(float).tolist(), 
+                "bounds": mesh.bounds.astype(float).tolist(),
+                "centroid": mesh.centroid.astype(float).tolist()
+            }
+        
+        except Exception as e:
+            # Log the original error for debugging
+            logger.error(f"Error processing mesh file: {e}") 
+            # Re-raise with a generic user-facing message, preserving the detailed error from the logic above
+            raise Exception(f"Geometry file processing failed. Is it a valid STL/OBJ file? Error: {str(e)}")
+        
     async def _calculate_structural_analysis(self, geometry: Dict[str, Any], config: Dict[str, Any]) -> Dict[str, Any]:
         """Real structural analysis calculations"""
         import numpy as np
