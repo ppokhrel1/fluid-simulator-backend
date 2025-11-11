@@ -247,7 +247,8 @@ async def quick_demo(
         
         if final_simulation["status"] == "failed":
             raise HTTPException(status_code=500, detail=final_simulation.get("error", "Simulation failed"))
-        
+        print(final_simulation["results"].get("simulation_metrics", {}))
+
         return {
             "simulation_id": simulation["id"],
             "status": "completed",

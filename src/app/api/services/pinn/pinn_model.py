@@ -342,17 +342,17 @@ class PINNFlowSolver:
         # Use float32 explicitly for NumPy arrays
         y_coords = np.linspace(domain["domain_bounds"][1][0], domain["domain_bounds"][1][1], 8, dtype=np.float32)
         z_coords = np.linspace(domain["domain_bounds"][2][0], domain["domain_bounds"][2][1], 4, dtype=np.float32)
-        
+        #print(domain)
         seed_points = []
         for y in y_coords:
             for z in z_coords:
-                seed_points.append([x_min, y, z])
+                seed_points.append([float(x_min), float(y), float(z)])
         
         for seed in seed_points[:num_streamlines]:
             streamline = self._trace_streamline_pinn(seed, velocity_field, domain, sdf, max_steps=80)
             if len(streamline) > 3:
                 streamlines.append(streamline)
-        
+        print("streamlines: ", streamlines)
         return streamlines
     
     def _trace_streamline_pinn(self, start_point: List[float], velocity_field: np.ndarray,
@@ -365,8 +365,8 @@ class PINNFlowSolver:
         for step in range(max_steps):
             vel = self._interpolate_velocity_pinn(point, velocity_field, domain)
             
-            if np.linalg.norm(vel) < 0.005:
-                break
+            # if np.linalg.norm(vel) < 0.005:
+            #     break
             
             # RK4 integration
             k1 = vel
@@ -377,9 +377,9 @@ class PINNFlowSolver:
             point = point + (step_size / 6.0) * (k1 + 2*k2 + 2*k3 + k4)
             
             # Check boundaries and collision with geometry
-            if (self._is_outside_domain(point, domain) or 
-                self._interpolate_sdf_pinn(point, sdf, domain) < -0.02):
-                break
+            # if (self._is_outside_domain(point, domain) or 
+            #     self._interpolate_sdf_pinn(point, sdf, domain) < -0.02):
+            #     break
             
             streamline.append(point.tolist())
         
