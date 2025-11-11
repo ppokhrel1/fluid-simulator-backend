@@ -74,3 +74,4 @@ scipy
 replicate
 torch
 rtree
+pyfqmr
