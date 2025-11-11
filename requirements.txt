@@ -47,8 +47,8 @@ requests==2.32.5
 stripe
 arq
 trimesh
-# numpy
+numpy
 replicate
-# torch
+torch
 rtree
 pyfqmr

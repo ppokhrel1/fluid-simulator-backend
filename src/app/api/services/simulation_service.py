@@ -304,7 +304,7 @@ class SimulationService:
             raise Exception(f"Local computation error: {str(e)}")
 
 
-    async def process_geometry_file(self, file, max_faces=10) -> Dict[str, List[Any]]:
+    async def process_geometry_file(self, file, max_faces=25) -> Dict[str, List[Any]]:
         """
         Reads an uploaded mesh file (STL, OBJ, etc.) and extracts
         vertices, faces, bounds, and centroid using trimesh.
@@ -342,7 +342,7 @@ class SimulationService:
                 
                 mesh_simplifier = pyfqmr.Simplify()
                 mesh_simplifier.setMesh(mesh.vertices, mesh.faces)
-                mesh_simplifier.simplify_mesh(target_count = 1000, aggressiveness=15, preserve_border=False, verbose=True)
+                mesh_simplifier.simplify_mesh(target_count = 3000, aggressiveness=2, preserve_border=False, verbose=True)
                 vertices, faces, normals = mesh_simplifier.getMesh()
                 mesh = trimesh.Trimesh(vertices=vertices, faces=faces)
                 logger.info(f"Mesh simplified to {len(mesh.faces)} faces.")
@@ -365,9 +365,7 @@ class SimulationService:
             raise Exception(f"Geometry file processing failed. Is it a valid STL/OBJ file? Error: {str(e)}")
         
     async def _calculate_structural_analysis(self, geometry: Dict[str, Any], config: Dict[str, Any]) -> Dict[str, Any]:
-        """Real structural analysis calculations"""
-        import numpy as np
-        
+        """Real structural analysis calculations"""        
         vertices = np.array(geometry.get("vertices", []))
         faces = np.array(geometry.get("faces", []))
         
